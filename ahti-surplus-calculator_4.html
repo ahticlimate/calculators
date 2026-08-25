@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Surplus calculator — Ahti Climate</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0E2A4E; --blue:#1B7FDB; --sky:#5AAEEE; --green:#1CC17E;
+    --slate:#5C7A93; --line:#E3E8EF; --paper:#FFFFFF; --wash:#F7F9FC; --warn:#C2452D;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--wash);color:var(--navy);
+    font-family:"Poppins",system-ui,sans-serif;font-size:14px;line-height:1.5;
+    font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1060px;margin:0 auto;padding:28px 22px 64px}
+
+  header{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;
+    border-bottom:2px solid var(--navy);padding-bottom:14px;margin-bottom:26px}
+  h1{font-weight:700;font-size:clamp(24px,3.2vw,34px);letter-spacing:-.01em;margin:0;line-height:1.15}
+  h1 em{font-style:normal;color:var(--blue)}
+  .kicker{font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--slate);margin:0 0 8px}
+  .brandmark img{display:block;width:150px;height:auto}
+
+  .cols{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:22px;align-items:start}
+  @media(max-width:900px){.cols{grid-template-columns:1fr}}
+
+  .panel{background:var(--paper);border:1px solid var(--line);border-radius:4px}
+  .panel > h3{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--slate);margin:0;padding:14px 18px;border-bottom:1px solid var(--line)}
+  .panel .body{padding:16px 18px}
+
+  fieldset{border:0;margin:0 0 18px;padding:0}
+  fieldset:last-child{margin-bottom:4px}
+  legend{font-weight:600;font-size:13.5px;padding:0 0 9px}
+  .field{display:grid;grid-template-columns:1fr 118px;align-items:center;gap:10px;padding:5px 0}
+  .field.wide{grid-template-columns:1fr}
+  .field label{font-size:13px}
+  .field label small{display:block;color:var(--slate);font-size:11px;line-height:1.35}
+  .inp{display:flex;align-items:center;border:1px solid var(--line);border-radius:4px;background:var(--paper);
+    transition:border-color .12s ease, box-shadow .12s ease}
+  .inp:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px rgba(27,127,219,.12)}
+  .inp input,.inp select,.inp textarea{width:100%;border:0;outline:0;background:transparent;padding:8px 9px;
+    font-family:inherit;font-size:13.5px;color:var(--navy);text-align:right;min-width:0}
+  .inp select,.inp textarea{text-align:left}
+  .inp textarea{resize:vertical;min-height:64px;line-height:1.5}
+  .inp .unit{font-size:10.5px;color:var(--slate);padding:0 9px 0 2px;white-space:nowrap}
+  input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type=number]{-moz-appearance:textfield}
+  .meta{font-size:11px;color:var(--slate);margin:2px 0 8px;line-height:1.5}
+
+  .qm{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;
+    border:1px solid var(--line);border-radius:50%;background:var(--paper);color:var(--slate);
+    font-family:inherit;font-size:10px;font-weight:600;line-height:1;cursor:pointer;padding:0;
+    margin-left:5px;vertical-align:1px}
+  .qm:hover{border-color:var(--blue);color:var(--blue)}
+  .qm[aria-expanded="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+  .qm:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+  .help{background:#F2F7FC;border-left:2px solid var(--blue);border-radius:0 3px 3px 0;
+    padding:10px 12px;margin:2px 0 10px}
+  .help p{margin:0;font-size:11.5px;color:var(--slate);line-height:1.6}
+  .asklink{border:0;background:none;padding:0;margin-top:7px;cursor:pointer;
+    font-family:inherit;font-size:11.5px;font-weight:600;color:var(--blue)}
+  .asklink:hover{text-decoration:underline}
+
+  .quote{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}
+  .quote .src{font-size:11px;color:var(--slate);line-height:1.4}
+  .quote .src b{color:var(--navy);font-weight:500}
+  .btn{border:1px solid var(--line);background:var(--paper);border-radius:4px;cursor:pointer;
+    font-family:inherit;font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--slate);padding:7px 10px;white-space:nowrap}
+  .btn:hover{border-color:var(--blue);color:var(--blue)}
+  .btn:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+  .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--slate);
+    margin-right:6px;vertical-align:middle}
+  .dot.live{background:var(--green)} .dot.stale{background:#E0A31F}
+
+  .headline{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:22px}
+  @media(max-width:520px){.headline{grid-template-columns:1fr}}
+  .hcell{background:var(--paper);padding:18px 20px}
+  .hcell .lab{font-size:10.5px;font-weight:500;letter-spacing:.13em;text-transform:uppercase;color:var(--slate)}
+  .hcell .val{font-weight:700;font-size:clamp(28px,4.4vw,42px);letter-spacing:-.02em;line-height:1.1;margin:6px 0 2px}
+  .hcell .sub{font-size:12px;color:var(--slate)}
+  .hcell.surplus .val{color:var(--green)}
+  .hcell.money .val{color:var(--blue)}
+
+  .ledger{width:100%;border-collapse:collapse}
+  .ledger th{font-size:10px;font-weight:500;letter-spacing:.13em;text-transform:uppercase;
+    color:var(--slate);text-align:left;padding:0 0 8px}
+  .ledger th:last-child{text-align:right}
+  .ledger td{padding:13px 0;border-top:1px solid var(--line);font-size:16px;font-weight:500;vertical-align:middle}
+  .ledger td.num{text-align:right;font-size:24px;font-weight:600;letter-spacing:-.01em;white-space:nowrap}
+  .ledger tr.sub td,.ledger tr.total td{font-size:17px}
+  .ledger tr.sub td.num,.ledger tr.total td.num{font-size:26px;font-weight:700}
+  .ledger tr.sub td,.ledger tr.total td{border-top:2px solid var(--navy);font-weight:600}
+  .ledger tr.total td{padding-top:11px}
+  .ledger .bar{display:block;height:7px;border-radius:4px;margin-top:9px;min-width:2px}
+  .pos{color:var(--green)} .neg{color:var(--warn)}
+  .bar.rev{background:var(--green)} .bar.ets{background:var(--sky)} .bar.cost{background:var(--warn)}
+
+  .sens{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:4px;overflow:hidden}
+  @media(max-width:640px){.sens{grid-template-columns:repeat(2,1fr)}}
+  .scell{background:var(--paper);padding:12px 10px;text-align:center}
+  .scell.here{background:#EAF4FD}
+  .scell .p{font-size:11.5px;color:var(--slate)}
+  .scell .n{font-weight:600;font-size:16px;margin-top:3px}
+
+  .caution{border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:4px;
+    background:var(--paper);padding:14px 16px;margin-bottom:22px}
+  .caution h4{margin:0 0 6px;font-size:12.5px;font-weight:600}
+  .caution p{margin:0 0 8px;font-size:12px;color:var(--slate);line-height:1.6}
+  .caution p:last-child{margin-bottom:0}
+
+  .cta{background:linear-gradient(135deg,#1B7FDB 0%,#0E2A4E 100%);border-radius:4px;
+    padding:24px 26px;margin-bottom:22px;color:#fff}
+  .cta .eyebrow{margin:0;font-size:10.5px;font-weight:500;letter-spacing:.14em;
+    text-transform:uppercase;color:rgba(255,255,255,.72)}
+  .cta h3{margin:6px 0 6px;font-size:clamp(20px,2.6vw,27px);font-weight:700;letter-spacing:-.01em;line-height:1.15}
+  .cta h3 span{color:#5FE3B0}
+  .cta .cta-sub{margin:0 0 16px;font-size:12.5px;color:rgba(255,255,255,.82);
+    line-height:1.6;max-width:520px}
+  .cta-row{display:flex;gap:10px;flex-wrap:wrap}
+  .cta-row .cta-inp{flex:1 1 190px;min-width:0}
+  .cta-row input{width:100%;border:1px solid rgba(255,255,255,.3);border-radius:4px;
+    background:rgba(255,255,255,.12);padding:11px 12px;color:#fff;
+    font-family:inherit;font-size:13.5px;outline:0}
+  .cta-row input::placeholder{color:rgba(255,255,255,.65)}
+  .cta-row input:focus{border-color:#fff;background:rgba(255,255,255,.2)}
+  .cta-btn{flex:0 0 auto;border:0;border-radius:4px;background:#1CC17E;color:#06301F;
+    font-family:inherit;font-size:13px;font-weight:600;padding:11px 22px;cursor:pointer}
+  .cta-btn:hover{background:#17AE70}
+  .cta-btn:focus-visible{outline:2px solid #fff;outline-offset:2px}
+  .cta-note{margin:12px 0 0;font-size:11.5px;color:rgba(255,255,255,.75)}
+  .cta-note.warn{color:#FFD9A8}
+
+  .foot{margin-top:26px;border-top:1px solid var(--line);padding-top:14px;
+    font-size:11.5px;color:var(--slate);line-height:1.7}
+  .foot b{color:var(--navy);font-weight:600}
+  .foot ul{margin:6px 0 0;padding-left:17px}
+  .foot li{margin:3px 0}
+  .stamp{font-size:10px;font-weight:500;letter-spacing:.13em;text-transform:uppercase;margin-top:18px}
+  .hint{font-size:12px;color:var(--slate);margin:14px 0 0}
+  .hint b{color:var(--navy);font-weight:600}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <p class="kicker">FuelEU Maritime 2026 · pooling supply side</p>
+      <h1>What your biofuel switch is<br><em>worth in the pool</em></h1>
+    </div>
+    <div class="brandmark"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAWgAAAC6CAYAAACDZNdFAAA5yklEQVR42u29e5gddZXv/V3r96u9e+/uXCFBLhKEkE46kIABREA7wQtyR2THAwpJwJN5dF5n5h2dM2d8mdPpmfPOO3POmauX88goJCgczdYZLoIiKmkUBaVHCNAkIUSDoJgAuXT3vtXv91vvH1W7b+nudJLOrbM+z5Mn6ezdtatqV31r1bfWBVAURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVEURVGUIxE6NjZTqLAWvG3G8NvbsYScHgqKoiiKoiiKRtCAEAQAkSy83600kbkwOCeQdLuNBYLrMRX7l51LaRdECESih4WiKEcCdkJvXRsIgCy83/9rNJU/IR4wsMllSQA2QNxtUGL8PYBdWFV/RVEURQX6oFFYK6a4lPzCc+Lr7BT7iXi3jyGCvugZEGJLIn4XGxv0UFAURQX6EENMN0EQIMIEMv3yLEIEEpn4+0BRFBXoIwcRKhL5RQ9I3otbFGpgAjRKVhTlqIInauAMADVgLhl+h8QeALF+3YqiaAR9mGldB+4Aggn+Em405HqcIyK1Mo6Sux8AwCoQVgEoggrpS9teAGFx8u+Z25OHucUCgmbeKCrQRxH1kxckF+lXfAQK8CpQYT5o2wwQ1q3DzPmLhxNbQXvyj+LA328fYZkq0ooK9FGhAFRcSr7leclgi7sg1AAiqL1xOEUYQMc6BLRTXYClOMKvzn5Ysk3A5BCjKcNo9BRPh6OpQtQI8o0BxpIgsGA3Z83rcQld64m2HaItG61uQA7D58phXvahrqOQw7yvVKDH4SskEMRswVlgPlViLzhmStoPgxAXwa0zQH2Ww1Lyo4nwgkekEb3Vk9nyiYH4RCLMQpCTEehUGMyE81MhchwTpnq2GXAEigAiAGRg0kx1ESA4wE7GWwsfiG989pro+wURUyTy47uRbYxCF6FY9Hs5ycc7h55QKHBy+1D04//lFUx6f+L3b71a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" alt="Ahti Climate"></div>
+  </header>
+
+  <div class="cols">
+
+    <form class="panel" id="form" autocomplete="off">
+      <h3>Your inputs</h3>
+      <div class="body">
+
+        <fieldset>
+          <legend>Fuel switch</legend>
+          <div class="field wide">
+            <label for="fossil">Fossil fuel replaced</label>
+          </div>
+          <div class="field wide">
+            <div class="inp">
+              <select id="fossil">
+                <option value="hfo">HFO / VLSFO</option>
+                <option value="lfo">LFO</option>
+                <option value="mgo" selected>MDO / MGO</option>
+              </select>
+            </div>
+          </div>
+          <div class="meta" id="fuelMeta">WtW intensity 90.77 gCO₂e/MJ · CO₂ factor 3.206 t/t</div>
+          <div class="field">
+            <label for="tons">Tonnes replaced<small>Biofuel bunkered tonne for tonne</small></label>
+            <div class="inp"><input type="number" id="tons" value="1000" min="0" step="10"><span class="unit">t</span></div>
+          </div>
+          <div class="field">
+            <label for="ciBio">Biofuel GHG intensity <button type="button" class="qm" data-help="ciBio" aria-expanded="false" aria-label="Where do I find this number?">?</button><small>Certified well-to-wake value</small></label>
+            <div class="inp"><input type="number" id="ciBio" value="15" min="0" step="0.5"><span class="unit">g/MJ</span></div>
+          </div>
+        <div class="help" id="help-ciBio" hidden>
+          <p>Take it from the Proof of Sustainability your supplier issues with the fuel. It is the well-to-wake E value in gCO&#8322;e/MJ. Certified waste-based FAME and HVO typically land between 10 and 25.</p>
+          <button type="button" class="asklink" data-topic="Biofuel GHG intensity">Ask Ahti about this &rarr;</button>
+        </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Prices</legend>
+          <div class="field">
+            <label for="priceFossil">Fossil fuel price</label>
+            <div class="inp"><input type="number" id="priceFossil" value="720" min="0" step="5"><span class="unit">$/t</span></div>
+          </div>
+          <div class="field">
+            <label for="priceBio">Biofuel price<small>Delivered, per tonne</small></label>
+            <div class="inp"><input type="number" id="priceBio" value="1275" min="0" step="5"><span class="unit">$/t</span></div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Market data</legend>
+          <div class="field">
+            <label for="eua">EUA price</label>
+            <div class="inp"><input type="number" id="eua" value="81.35" min="0" step="0.05"><span class="unit">€/t</span></div>
+          </div>
+          <div class="field">
+            <label for="fx">EUR / USD</label>
+            <div class="inp"><input type="number" id="fx" value="1.1573" min="0.1" step="0.0001"><span class="unit">rate</span></div>
+          </div>
+          <div class="quote">
+            <div class="src" id="quoteSrc"><span class="dot"></span>Checking live quotes…</div>
+            <button type="button" class="btn" id="refresh">Refresh</button>
+          </div>
+        </fieldset>
+      </div>
+    </form>
+
+    <div>
+      <div class="headline">
+        <div class="hcell surplus">
+          <div class="lab">Compliance surplus generated</div>
+          <div class="val" id="oSurplus">2 750</div>
+          <div class="sub" id="oSurplusSub">tCO₂e · 2.75 t per tonne of biofuel</div>
+        </div>
+        <div class="hcell money">
+          <div class="lab">Value created</div>
+          <div class="val" id="oValue">$557k</div>
+          <div class="sub" id="oValueSub">unit sale plus ETS savings</div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:22px">
+        <h3>The numbers</h3>
+        <div class="body">
+          <table class="ledger">
+            <thead><tr><th>Line</th><th>USD</th></tr></thead>
+            <tbody>
+              <tr>
+                <td>Sale of surplus units<span class="bar rev" id="bRev"></span></td>
+                <td class="num pos" id="oRev">+254 657</td>
+              </tr>
+              <tr>
+                <td>EU ETS cost avoided<span class="bar ets" id="bEts"></span></td>
+                <td class="num pos" id="oEts">+301 911</td>
+              </tr>
+              <tr class="sub"><td>Value created</td><td class="num pos" id="oValue2">+556 568</td></tr>
+              <tr>
+                <td>Biofuel premium paid<span class="bar cost" id="bCost"></span></td>
+                <td class="num neg" id="oCost">−555 000</td>
+              </tr>
+              <tr class="total"><td>Net result</td><td class="num pos" id="oNet">+1 568</td></tr>
+            </tbody>
+          </table>
+          <p class="hint" id="oBreakeven"><b>Break-even biofuel premium: $557 per tonne.</b> Below that, the switch pays for itself.</p>
+        </div>
+      </div>
+
+      <div class="cta">
+        <p class="eyebrow">Ready to sell</p>
+        <h3><span id="ctaVol">2 750 tCO₂e</span> of compliance surplus. What is it worth?</h3>
+        <p class="cta-sub">Ahti buys verified FuelEU units directly and settles the pooling for you.
+           Leave an email or a phone number and we come back with a firm price. Your figures above
+           go with the request, so there is nothing else to fill in.</p>
+        <div class="cta-row">
+          <div class="cta-inp"><input type="email" id="qEmail" placeholder="Email"></div>
+          <div class="cta-inp"><input type="tel" id="qPhone" placeholder="Phone (optional)"></div>
+          <button type="button" class="cta-btn" id="qSend">Get a price</button>
+        </div>
+        <p class="cta-note" id="qMsgOut">Goes to info@ahticlimate.com. We reply within one business day.</p>
+      </div>
+
+      <div class="panel" style="margin-bottom:22px">
+        <h3>Net result at other biofuel intensities</h3>
+        <div class="body">
+          <div class="sens" id="sens"></div>
+          <p class="hint">Lower certified intensity means more units from the same tonnage.</p>
+        </div>
+      </div>
+
+      <div class="caution">
+        <h4>Your actual benefit depends on your FuelEU exposure</h4>
+        <p>The figures above assume every tonne you switch is burned inside the FuelEU and EU ETS scope.
+           In practice a surplus only arises on energy in scope: all energy used on intra-EEA voyages and at
+           berth in EEA ports, half of the energy on voyages to or from a port outside the EEA, and none
+           outside that. If part of the fuel is burned outside, both the surplus and the ETS saving fall
+           proportionally. Send us your trade pattern and we will run it properly.</p>
+        <p>The surplus is also netted against your own position first. If vessels in your own FuelEU
+           reporting perimeter run a deficit, the surplus covers that before anything is available to sell,
+           and the value of the switch shows up as penalties avoided rather than units sold. Final volumes
+           are whatever your verifier confirms and THETIS-MRV records.</p>
+      </div>
+
+      <div class="foot">
+        <b>How this is calculated.</b> Compliance balance follows FuelEU Maritime Annex IV: (target intensity
+        − your biofuel intensity) × energy delivered in scope, converted to tCO₂e.
+        <ul>
+          <li>2026 target 89.34 gCO₂e/MJ, 2% below the 91.16 baseline.</li>
+          <li>Fossil reference values from FuelEU Annex II: HFO/VLSFO 91.70 gCO₂e/MJ and 3.114 tCO₂/t,
+              LFO 91.40 and 3.151, MDO/MGO 90.77 and 3.206.</li>
+          <li>Biofuel replaces the fossil fuel one tonne for one tonne, at an energy content of 37 MJ/kg.</li>
+          <li>ETS saving assumes certified sustainable biofuel is zero-rated, at full phase-in.</li>
+          <li>No RFNBO multiplier or wind reward factor. Surplus must be verified and reported in THETIS-MRV
+              before it can be pooled.</li>
+          <li>EUA quote is indicative front-month ICE EUA; FX is the ECB reference rate. Indicative figures
+              only — not an offer. Unit prices are quoted case by case.</li>
+        </ul>
+        <div class="stamp">© Ahti Climate</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var TARGET = 89.3368;   // FuelEU 2026 target, gCO2e/MJ
+  var LCV    = 37;        // biofuel energy content, MJ/kg
+  var FUELS = {
+    hfo:{name:"HFO / VLSFO", ci:91.70, ef:3.114, price:520},
+    lfo:{name:"LFO",         ci:91.40, ef:3.151, price:620},
+    mgo:{name:"MDO / MGO",   ci:90.77, ef:3.206, price:720}
+  };
+  var POOL_EUR = 80;      // EUR per tCO2e paid for units - not shown on the page
+  var FB_DATE = "18 Aug 2026", FX_FB = 1.1573;
+
+  var $ = function(id){ return document.getElementById(id); };
+  var n0 = new Intl.NumberFormat("en-US",{maximumFractionDigits:0});
+  var n1 = new Intl.NumberFormat("en-US",{maximumFractionDigits:1});
+  var n2 = new Intl.NumberFormat("en-US",{maximumFractionDigits:2});
+  function sp(s){ return String(s).replace(/,/g," "); }
+  function num(id){ var v = parseFloat($(id).value); return isFinite(v) ? v : 0; }
+  function val(id){ return $(id).value.trim(); }
+  function money(v){ return (v<0?"−":"+") + sp(n0.format(Math.abs(v))); }
+  function compact(v){
+    var a = Math.abs(v), s = (v<0?"−$":"$");
+    if(a >= 1e6) return s + n2.format(a/1e6) + "m";
+    if(a >= 1e4) return s + n0.format(a/1e3) + "k";
+    if(a >= 1e3) return s + n1.format(a/1e3) + "k";
+    return s + n0.format(a);
+  }
+  function fuel(){ return FUELS[$("fossil").value] || FUELS.mgo; }
+
+  function model(ciBio){
+    var t  = num("tons"), fx = num("fx") || FX_FB, f = fuel();
+    var MJ = t * LCV * 1000;
+    var surplus = (TARGET - ciBio) * MJ / 1e6;                          // tCO2e, all energy assumed in scope
+    var ets = t * f.ef * num("eua") * fx;                               // USD
+    var rev = Math.max(surplus,0) * POOL_EUR * fx;                     // USD
+    var premium = t * (num("priceBio") - num("priceFossil"));
+    return {t:t, fx:fx, f:f, surplus:surplus, ets:ets, rev:rev, premium:premium,
+            value:rev+ets, net:rev+ets-premium};
+  }
+
+  function render(){
+    var m = model(num("ciBio")), f = m.f;
+
+    $("fuelMeta").textContent = "WtW intensity " + n2.format(f.ci) + " gCO₂e/MJ · CO₂ factor " +
+                                n2.format(f.ef).replace(/0$/,"") + " t/t";
+
+    $("oSurplus").textContent = sp(n0.format(Math.max(m.surplus,0)));
+    $("oSurplusSub").textContent = "tCO₂e · " + n2.format(m.t>0 ? m.surplus/m.t : 0) + " t per tonne of biofuel";
+    $("ctaVol").textContent = sp(n0.format(Math.max(m.surplus,0))) + " tCO₂e";
+
+    $("oValue").textContent = compact(m.value);
+    $("oValueSub").textContent = m.t>0
+      ? "$" + n0.format(m.value/m.t) + " per tonne of biofuel bunkered"
+      : "unit sale plus ETS savings";
+
+    $("oRev").textContent    = money(m.rev);
+    $("oEts").textContent    = money(m.ets);
+    $("oValue2").textContent = money(m.value);
+    $("oCost").textContent   = money(-m.premium);
+    $("oCost").className     = "num " + (m.premium >= 0 ? "neg" : "pos");
+    $("oNet").textContent    = money(m.net);
+    $("oNet").className      = "num " + (m.net >= 0 ? "pos" : "neg");
+
+    var scale = Math.max(m.rev, m.ets, Math.abs(m.premium), 1);
+    $("bRev").style.width  = (m.rev/scale*100) + "%";
+    $("bEts").style.width  = (m.ets/scale*100) + "%";
+    $("bCost").style.width = (Math.abs(m.premium)/scale*100) + "%";
+
+    $("oBreakeven").innerHTML = m.surplus <= 0
+      ? "<b>No surplus at these inputs.</b> Check the biofuel intensity and the FuelEU scope."
+      : "<b>Break-even biofuel premium: $" + n0.format(m.t > 0 ? m.value/m.t : 0) +
+        " per tonne.</b> Below that, the switch pays for itself.";
+
+    $("sens").innerHTML = [5,10,15,20,30].map(function(c){
+      var v = model(c).net;
+      return '<div class="scell' + (Math.abs(c-num("ciBio"))<0.5 ? ' here' : '') + '">' +
+             '<div class="p">' + c + ' g/MJ</div>' +
+             '<div class="n" style="color:' + (v<0?'var(--warn)':'var(--green)') + '">' + compact(v) + '</div></div>';
+    }).join("");
+  }
+
+  /* ---------- inline help ---------- */
+  var topics = [];
+
+  Array.prototype.forEach.call(document.querySelectorAll(".qm"), function(b){
+    b.addEventListener("click", function(){
+      var box = $("help-" + b.getAttribute("data-help"));
+      var open = b.getAttribute("aria-expanded") === "true";
+      b.setAttribute("aria-expanded", open ? "false" : "true");
+      box.hidden = open;
+    });
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll(".asklink"), function(b){
+    b.addEventListener("click", function(){
+      var t = b.getAttribute("data-topic");
+      if(topics.indexOf(t) === -1) topics.push(t);
+      document.querySelector(".cta").scrollIntoView({behavior:"smooth", block:"center"});
+      setTimeout(function(){ $("qEmail").focus({preventScroll:true}); }, 400);
+      note("We will explain " + topics.join(" and ").toLowerCase() +
+           " when we come back to you. Just leave a contact below.", false);
+    });
+  });
+
+  /* ---------- quotation request ---------- */
+  function summary(){
+    var m = model(num("ciBio")), f = m.f;
+    var L = [];
+    L.push("REQUEST FOR QUOTATION - FuelEU compliance units");
+    L.push("");
+    L.push("Please send me a price for the units below.");
+    L.push("");
+    if(val("qEmail")) L.push("Email: " + val("qEmail"));
+    if(val("qPhone")) L.push("Phone: " + val("qPhone"));
+    if(topics.length) L.push("", "Please help me with: " + topics.join(", ") + ".");
+    L.push("", "--- Calculation ---");
+    L.push("Fossil fuel replaced: " + f.name + " (" + n2.format(f.ci) + " gCO2e/MJ)");
+    L.push("Tonnes replaced: " + n0.format(m.t) + " t");
+    L.push("Biofuel GHG intensity: " + n1.format(num("ciBio")) + " gCO2e/MJ");
+    L.push("Compliance surplus generated: " + n0.format(m.surplus) + " tCO2e (assuming all energy in scope)");
+    L.push("");
+    L.push("Fossil fuel price: " + n0.format(num("priceFossil")) + " USD/t");
+    L.push("Biofuel price: " + n0.format(num("priceBio")) + " USD/t");
+    L.push("Biofuel premium: " + n0.format(m.premium) + " USD");
+    L.push("ETS cost avoided: " + n0.format(m.ets) + " USD (EUA " + n2.format(num("eua")) +
+           " EUR, EURUSD " + n2.format(m.fx) + ")");
+    L.push("Value created: " + n0.format(m.value) + " USD");
+    L.push("Net result: " + n0.format(m.net) + " USD");
+    L.push("");
+    L.push("Generated by the Ahti Climate surplus calculator on " + new Date().toISOString().slice(0,10) + ".");
+    return L.join("\n");
+  }
+
+  $("qSend").addEventListener("click", function(){
+    if(!val("qEmail") && !val("qPhone")){
+      note("Add an email or a phone number so we can reach you.", true);
+      $("qEmail").focus();
+      return;
+    }
+    note("Opening your email client. Send the message and we will be in touch.", false);
+    window.location.href = "mailto:info@ahticlimate.com?subject=" +
+      encodeURIComponent("Request for quotation - FuelEU compliance units") +
+      "&body=" + encodeURIComponent(summary());
+  });
+
+  /* ---------- live market data ---------- */
+  var EUA_SRC = "https://stooq.com/q/l/?s=ck.f&f=sd2t2ohlc&h&e=csv";
+  var PROXY   = "https://api.allorigins.win/raw?url=";
+  var FX_SRC  = ["https://api.frankfurter.dev/v1/latest?base=EUR&symbols=USD",
+                 "https://open.er-api.com/v6/latest/EUR"];
+  var status = {eua:null, fx:null};
+
+  function setQuote(state, text){ $("quoteSrc").innerHTML = '<span class="dot ' + state + '"></span>' + text; }
+  function getText(url){
+    return fetch(url, {cache:"no-store"}).then(function(r){
+      if(!r.ok) throw new Error(r.status);
+      return r.text();
+    });
+  }
+  function loadEua(){
+    var parse = function(txt){
+      var rows = txt.trim().split("\n");
+      if(rows.length < 2) throw new Error("empty");
+      var c = rows[1].split(","), p = parseFloat(c[6]);
+      if(!isFinite(p) || p <= 0) throw new Error("bad");
+      return {price:p, date:c[1]};
+    };
+    return getText(EUA_SRC).then(parse)
+      .catch(function(){ return getText(PROXY + encodeURIComponent(EUA_SRC)).then(parse); });
+  }
+  function pickUsd(t){ var r = JSON.parse(t).rates.USD; if(!isFinite(r)) throw new Error("bad"); return r; }
+  function loadFx(){
+    return getText(FX_SRC[0]).then(pickUsd)
+      .catch(function(){ return getText(FX_SRC[1]).then(pickUsd); });
+  }
+  function report(){
+    if(status.eua === null || status.fx === null) return;
+    if(status.eua && status.fx){
+      setQuote("live", "Live: EUA <b>€" + n2.format(num("eua")) + "</b> · EUR/USD <b>" + n2.format(num("fx")) + "</b>");
+    } else if(status.eua || status.fx){
+      setQuote("stale", "Partly live — the other figure is the " + FB_DATE + " close. Edit above if needed.");
+    } else {
+      setQuote("stale", "Live quotes unavailable — using the <b>" + FB_DATE + "</b> close. Edit above if needed.");
+    }
+  }
+  function refresh(){
+    status = {eua:null, fx:null};
+    setQuote("", "Checking live quotes…");
+    loadEua().then(function(q){ $("eua").value = q.price; status.eua = true; })
+             .catch(function(){ status.eua = false; })
+             .then(function(){ render(); report(); });
+    loadFx().then(function(r){ $("fx").value = Math.round(r*10000)/10000; status.fx = true; })
+            .catch(function(){ status.fx = false; })
+            .then(function(){ render(); report(); });
+  }
+
+  $("fossil").addEventListener("change", function(){
+    $("priceFossil").value = fuel().price;   // reset to a typical price for the selected grade
+    render();
+  });
+  ["tons","ciBio","priceFossil","priceBio","eua","fx"].forEach(function(id){
+    $(id).addEventListener("input", render);
+    $(id).addEventListener("change", render);
+  });
+  $("refresh").addEventListener("click", refresh);
+
+  render();
+  refresh();
+})();
+</script>
+</body>
+</html>

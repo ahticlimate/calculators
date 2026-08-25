@@ -1,0 +1,81 @@
+import styled from "styled-components";
+import { breakpoints, theme } from "../../theme";
+import { formatCompact, formatInt, formatTwo } from "./format";
+import type { CalculatorResult } from "./model";
+
+const Headline = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: ${theme.colors.grey(4)};
+  border: 1px solid ${theme.colors.grey(4)};
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: ${theme.spacing(4)};
+
+  @media (max-width: ${breakpoints.mobile}px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const Cell = styled.div`
+  background: ${theme.colors.white};
+  padding: ${theme.spacing(3)} ${theme.spacing(3)};
+`;
+
+const Label = styled.div`
+  ${theme.fontLabelBold};
+  ${theme.fontSize(-2)};
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: ${theme.colors.dimBlue};
+`;
+
+const Value = styled.div<{ $color: string }>`
+  ${theme.fontTitle};
+  ${theme.fontSize(4)};
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin: 6px 0 2px;
+  color: ${(p) => p.$color};
+`;
+
+const Sub = styled.div`
+  ${theme.fontNormal};
+  ${theme.fontSize(-1)};
+  color: ${theme.colors.dimBlue};
+`;
+
+export const HeadlineFigures = ({ result }: { result: CalculatorResult }) => (
+  <Headline>
+    <Cell>
+      <Label>Compliance surplus generated</Label>
+      <Value $color={theme.colors.green}>
+        {formatInt(Math.max(result.surplus, 0))}
+      </Value>
+      <Sub>
+        {result.covered > 0 ? (
+          <>
+            tCO₂e · {formatInt(result.covered)} covers your own deficit,{" "}
+            {formatInt(result.sellable)} left to pool
+          </>
+        ) : (
+          <>
+            tCO₂e ·{" "}
+            {formatTwo(result.tons > 0 ? result.surplus / result.tons : 0)} t per
+            tonne of biofuel
+          </>
+        )}
+      </Sub>
+    </Cell>
+    <Cell>
+      <Label>Value created</Label>
+      <Value $color={theme.colors.blue}>{formatCompact(result.value)}</Value>
+      <Sub>
+        {result.tons > 0
+          ? `$${formatInt(result.value / result.tons)} per tonne of biofuel bunkered`
+          : "penalties avoided, unit sales and ETS savings"}
+      </Sub>
+    </Cell>
+  </Headline>
+);
