@@ -38,6 +38,7 @@ export const buildQuotationSummary = (
     `Biofuel price: ${plainInt(inputs.priceBio)} USD/t`,
     `Biofuel premium: ${plainInt(result.premium)} USD`,
     `FuelEU penalty avoided: ${plainInt(result.penaltyAvoided)} USD (${plainInt(result.penaltyRate)} USD per tCO2e)`,
+    `Alternative - sold into a pool at ${plainInt(inputs.poolPriceEur)} EUR/tCO2e: ${plainInt(result.poolValue)} USD (not additional to the line above)`,
     `ETS cost avoided: ${plainInt(result.ets)} USD (EUA ${plainTwo(inputs.eua)} EUR, EURUSD ${plainTwo(result.fx)})`,
     `Value created: ${plainInt(result.value)} USD`,
     `Net result: ${plainInt(result.net)} USD`,

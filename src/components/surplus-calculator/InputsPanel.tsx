@@ -266,6 +266,23 @@ export const InputsPanel = ({
           </InputShell>
         </Field>
         <Field>
+          <FieldLabel htmlFor="poolPriceEur">
+            Pooled unit price
+            <FieldHint>What a pool pays per surplus unit</FieldHint>
+          </FieldLabel>
+          <InputShell>
+            <input
+              type="number"
+              id="poolPriceEur"
+              min="0"
+              step="5"
+              value={raw.poolPriceEur}
+              onChange={(e) => onFieldChange("poolPriceEur", e.target.value)}
+            />
+            <Unit>€/t</Unit>
+          </InputShell>
+        </Field>
+        <Field>
           <FieldLabel htmlFor="fx">EUR / USD</FieldLabel>
           <InputShell>
             <input

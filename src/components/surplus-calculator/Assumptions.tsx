@@ -111,6 +111,11 @@ export const Assumptions = ({ result }: { result: CalculatorResult }) => (
           a single indicative rate here.
         </li>
         <li>
+          The pooled unit price is what a buyer pays for surplus units. It
+          values the same tonnes as the penalty figure does, so the two are
+          shown as alternatives and never summed.
+        </li>
+        <li>
           ETS saving assumes certified sustainable biofuel is zero-rated, at
           full phase-in.
         </li>

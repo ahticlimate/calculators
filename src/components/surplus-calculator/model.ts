@@ -18,6 +18,9 @@ export const CONTACT_EMAIL = "info@ahticlimate.com";
  */
 export const PENALTY_EUR_PER_TONNE = 640;
 
+/** Default price paid for surplus units in a pool, EUR per tCO2e. */
+export const DEFAULT_POOL_PRICE_EUR = 80;
+
 export type FossilFuelKey = "hfo" | "lfo" | "mgo";
 
 export interface FossilFuel {
@@ -51,6 +54,8 @@ export interface CalculatorInputs {
   priceBio: number;
   /** EUA price, EUR per tCO2 */
   eua: number;
+  /** Price paid for surplus units in a pool, EUR per tCO2e */
+  poolPriceEur: number;
   /** EUR / USD rate */
   fx: number;
 }
@@ -65,6 +70,12 @@ export interface CalculatorResult {
   penaltyRate: number;
   /** FuelEU penalty avoided by the surplus, USD */
   penaltyAvoided: number;
+  /**
+   * What the same surplus would fetch sold into a pool, USD. An alternative to
+   * penaltyAvoided, never additional to it — the same tonnes cannot both offset
+   * a penalty and be sold on — so this is deliberately kept out of `value`.
+   */
+  poolValue: number;
   /** EU ETS cost avoided, USD */
   ets: number;
   /** Biofuel premium paid, USD */
@@ -91,6 +102,7 @@ export const DEFAULT_RAW_INPUTS: RawInputs = {
   priceFossil: String(FOSSIL_FUELS[DEFAULT_FOSSIL].price),
   priceBio: "1275",
   eua: "81.35",
+  poolPriceEur: String(DEFAULT_POOL_PRICE_EUR),
   fx: String(FALLBACK_FX),
 };
 
@@ -109,6 +121,7 @@ export const toInputs = (
   priceFossil: toNumber(raw.priceFossil),
   priceBio: toNumber(raw.priceBio),
   eua: toNumber(raw.eua),
+  poolPriceEur: toNumber(raw.poolPriceEur),
   fx: toNumber(raw.fx),
 });
 
@@ -127,6 +140,7 @@ export const calculate = (
 
   const penaltyRate = PENALTY_EUR_PER_TONNE * fx;
   const penaltyAvoided = Math.max(surplus, 0) * penaltyRate;
+  const poolValue = Math.max(surplus, 0) * inputs.poolPriceEur * fx;
   const ets = inputs.tons * fuel.ef * inputs.eua * fx;
   const premium = inputs.tons * (inputs.priceBio - inputs.priceFossil);
   const value = penaltyAvoided + ets;
@@ -138,6 +152,7 @@ export const calculate = (
     surplus,
     penaltyRate,
     penaltyAvoided,
+    poolValue,
     ets,
     premium,
     value,

@@ -1,8 +1,8 @@
 import styled from "styled-components";
 import { theme } from "../../theme";
 import { Hint, Panel, PanelBody, PanelTitle } from "./calculator-styles";
-import { formatInt, formatSigned } from "./format";
-import type { CalculatorResult } from "./model";
+import { formatCompact, formatInt, formatSigned } from "./format";
+import type { CalculatorInputs, CalculatorResult } from "./model";
 
 const Ledger = styled.table`
   width: 100%;
@@ -70,6 +70,21 @@ const LineNote = styled.span`
   margin-top: 2px;
 `;
 
+const Alternative = styled.div`
+  margin-top: ${theme.spacing(3)};
+  padding-top: ${theme.spacing(2)};
+  border-top: 1px solid ${theme.colors.grey(4)};
+  ${theme.fontNormal};
+  ${theme.fontSize(-1)};
+  color: ${theme.colors.dimBlue};
+  line-height: 1.6;
+
+  b {
+    ${theme.fontLabelBold};
+    color: ${theme.colors.darkBlue};
+  }
+`;
+
 const Bar = styled.span<{ $width: number; $color: string }>`
   display: block;
   height: 7px;
@@ -80,7 +95,13 @@ const Bar = styled.span<{ $width: number; $color: string }>`
   background: ${(p) => p.$color};
 `;
 
-export const LedgerPanel = ({ result }: { result: CalculatorResult }) => {
+export const LedgerPanel = ({
+  inputs,
+  result,
+}: {
+  inputs: CalculatorInputs;
+  result: CalculatorResult;
+}) => {
   const scale = Math.max(
     result.penaltyAvoided,
     result.ets,
@@ -167,6 +188,18 @@ export const LedgerPanel = ({ result }: { result: CalculatorResult }) => {
             </>
           )}
         </Hint>
+
+        {result.surplus > 0 && (
+          <Alternative>
+            <b>Sold into a pool instead: {formatCompact(result.poolValue)}.</b>{" "}
+            At €{formatInt(inputs.poolPriceEur)} per tCO₂e the same{" "}
+            {formatInt(result.surplus)} tCO₂e fetches{" "}
+            {formatCompact(result.poolValue)} rather than the{" "}
+            {formatCompact(result.penaltyAvoided)} it saves against a penalty.
+            These are alternatives, not additions — a tonne that offsets a
+            deficit is no longer available to sell.
+          </Alternative>
+        )}
       </PanelBody>
     </Panel>
   );

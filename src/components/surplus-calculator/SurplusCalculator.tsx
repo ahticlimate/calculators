@@ -125,7 +125,7 @@ export const SurplusCalculator = () => {
 
       <div>
         <HeadlineFigures result={result} />
-        <LedgerPanel result={result} />
+        <LedgerPanel inputs={inputs} result={result} />
         <QuoteRequestCta
           surplus={result.surplus}
           email={email}
