@@ -60,13 +60,15 @@ export const HeadlineFigures = ({ result }: { result: CalculatorResult }) => (
       </Sub>
     </Cell>
     <Cell>
-      <Label>Value created</Label>
-      <Value $color={theme.colors.blue}>
-        {formatCompact(result.offsetValue)}
+      <Label>Net result, pooling the surplus</Label>
+      <Value
+        $color={result.poolNet >= 0 ? theme.colors.blue : theme.colors.red}
+      >
+        {formatCompact(result.poolNet)}
       </Value>
       <Sub>
-        offsetting your own penalty · {formatCompact(result.poolValue)} pooling
-        it instead
+        after the biofuel premium · {formatCompact(result.offsetNet)} offsetting
+        your own penalty instead
       </Sub>
     </Cell>
   </Headline>
