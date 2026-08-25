@@ -68,22 +68,26 @@ export interface CalculatorResult {
   surplus: number;
   /** Penalty rate applied, USD per tCO2e */
   penaltyRate: number;
-  /** FuelEU penalty avoided by the surplus, USD */
+  /** FuelEU penalty avoided if the surplus offsets your own deficit, USD */
   penaltyAvoided: number;
-  /**
-   * What the same surplus would fetch sold into a pool, USD. An alternative to
-   * penaltyAvoided, never additional to it — the same tonnes cannot both offset
-   * a penalty and be sold on — so this is deliberately kept out of `value`.
-   */
-  poolValue: number;
-  /** EU ETS cost avoided, USD */
+  /** Pooled unit price applied, USD per tCO2e */
+  poolRate: number;
+  /** Profit from pooling the surplus instead, USD */
+  poolProfit: number;
+  /** EU ETS cost avoided, USD — earned either way */
   ets: number;
   /** Biofuel premium paid, USD */
   premium: number;
-  /** Everything the switch brings in, USD */
-  value: number;
-  /** Value created less the premium, USD */
-  net: number;
+
+  /**
+   * The surplus is worth either the penalty it offsets or the price a pool pays
+   * for it, never both, so the two routes carry their own totals rather than
+   * being summed into one.
+   */
+  offsetValue: number;
+  offsetNet: number;
+  poolValue: number;
+  poolNet: number;
 }
 
 /**
@@ -139,11 +143,16 @@ export const calculate = (
   const surplus = ((TARGET_INTENSITY - ciBio) * megajoules) / 1e6;
 
   const penaltyRate = PENALTY_EUR_PER_TONNE * fx;
-  const penaltyAvoided = Math.max(surplus, 0) * penaltyRate;
-  const poolValue = Math.max(surplus, 0) * inputs.poolPriceEur * fx;
+  const poolRate = inputs.poolPriceEur * fx;
+  const available = Math.max(surplus, 0);
+
+  const penaltyAvoided = available * penaltyRate;
+  const poolProfit = available * poolRate;
   const ets = inputs.tons * fuel.ef * inputs.eua * fx;
   const premium = inputs.tons * (inputs.priceBio - inputs.priceFossil);
-  const value = penaltyAvoided + ets;
+
+  const offsetValue = penaltyAvoided + ets;
+  const poolValue = poolProfit + ets;
 
   return {
     tons: inputs.tons,
@@ -152,11 +161,14 @@ export const calculate = (
     surplus,
     penaltyRate,
     penaltyAvoided,
-    poolValue,
+    poolRate,
+    poolProfit,
     ets,
     premium,
-    value,
-    net: value - premium,
+    offsetValue,
+    offsetNet: offsetValue - premium,
+    poolValue,
+    poolNet: poolValue - premium,
   };
 };
 

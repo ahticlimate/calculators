@@ -42,24 +42,37 @@ const Net = styled.div<{ $positive: boolean }>`
   color: ${(p) => (p.$positive ? theme.colors.green : theme.colors.red)};
 `;
 
+const PoolNet = styled.div<{ $positive: boolean }>`
+  ${theme.fontNormal};
+  ${theme.fontSize(-1)};
+  margin-top: 1px;
+  color: ${(p) => (p.$positive ? theme.colors.dimBlue : theme.colors.red)};
+`;
+
 export const SensitivityPanel = ({ inputs }: { inputs: CalculatorInputs }) => (
   <Panel>
     <PanelTitle>Net result at other biofuel intensities</PanelTitle>
     <PanelBody>
       <Strip>
         {SENSITIVITY_INTENSITIES.map((ciBio) => {
-          const net = calculate(inputs, ciBio).net;
+          const row = calculate(inputs, ciBio);
           return (
             <Cell key={ciBio} $here={Math.abs(ciBio - inputs.ciBio) < 0.5}>
               <Intensity>{ciBio} g/MJ</Intensity>
-              <Net $positive={net >= 0}>{formatCompact(net)}</Net>
+              <Net $positive={row.offsetNet >= 0}>
+                {formatCompact(row.offsetNet)}
+              </Net>
+              <PoolNet $positive={row.poolNet >= 0}>
+                {formatCompact(row.poolNet)}
+              </PoolNet>
             </Cell>
           );
         })}
       </Strip>
       <Hint>
-        Lower certified intensity means more surplus, and more penalty avoided,
-        from the same tonnage.
+        Lower certified intensity means more surplus from the same tonnage. Bold
+        is the net result offsetting your own penalty, below it the net result
+        pooling the surplus instead.
       </Hint>
     </PanelBody>
   </Panel>

@@ -1,8 +1,8 @@
 import styled from "styled-components";
 import { theme } from "../../theme";
 import { Hint, Panel, PanelBody, PanelTitle } from "./calculator-styles";
-import { formatCompact, formatInt, formatSigned } from "./format";
-import type { CalculatorInputs, CalculatorResult } from "./model";
+import { formatInt, formatSigned } from "./format";
+import type { CalculatorResult } from "./model";
 
 const Ledger = styled.table`
   width: 100%;
@@ -44,9 +44,22 @@ const Amount = styled.td<{ $positive: boolean }>`
   }
 `;
 
-const SummaryRow = styled.tr`
+/** Header row that opens one of the two mutually exclusive routes. */
+const RouteRow = styled.tr`
   && td {
     border-top: 2px solid ${theme.colors.darkBlue};
+    padding-bottom: ${theme.spacing(0)};
+    ${theme.fontLabelBold};
+    ${theme.fontSize(-2)};
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: ${theme.colors.dimBlue};
+  }
+`;
+
+const NetRow = styled.tr`
+  && td {
+    border-top: 1px solid ${theme.colors.grey(4)};
     ${theme.fontLabelBold};
     ${theme.fontSize(1)};
   }
@@ -56,33 +69,12 @@ const SummaryRow = styled.tr`
   }
 `;
 
-const TotalRow = styled(SummaryRow)`
-  && td {
-    padding-top: ${theme.spacing(2)};
-  }
-`;
-
 const LineNote = styled.span`
   display: block;
   ${theme.fontNormal};
   ${theme.fontSize(-2)};
   color: ${theme.colors.dimBlue};
   margin-top: 2px;
-`;
-
-const Alternative = styled.div`
-  margin-top: ${theme.spacing(3)};
-  padding-top: ${theme.spacing(2)};
-  border-top: 1px solid ${theme.colors.grey(4)};
-  ${theme.fontNormal};
-  ${theme.fontSize(-1)};
-  color: ${theme.colors.dimBlue};
-  line-height: 1.6;
-
-  b {
-    ${theme.fontLabelBold};
-    color: ${theme.colors.darkBlue};
-  }
 `;
 
 const Bar = styled.span<{ $width: number; $color: string }>`
@@ -95,20 +87,16 @@ const Bar = styled.span<{ $width: number; $color: string }>`
   background: ${(p) => p.$color};
 `;
 
-export const LedgerPanel = ({
-  inputs,
-  result,
-}: {
-  inputs: CalculatorInputs;
-  result: CalculatorResult;
-}) => {
+export const LedgerPanel = ({ result }: { result: CalculatorResult }) => {
   const scale = Math.max(
     result.penaltyAvoided,
+    result.poolProfit,
     result.ets,
     Math.abs(result.premium),
     1,
   );
   const share = (value: number) => (Math.abs(value) / scale) * 100;
+  const surplus = Math.max(result.surplus, 0);
 
   return (
     <Panel>
@@ -124,10 +112,36 @@ export const LedgerPanel = ({
           <tbody>
             <tr>
               <td>
+                EU ETS cost avoided
+                <LineNote>Earned either way, on the fuel itself</LineNote>
+                <Bar $width={share(result.ets)} $color={theme.colors.lightBlue} />
+              </td>
+              <Amount $positive={result.ets >= 0}>
+                {formatSigned(result.ets)}
+              </Amount>
+            </tr>
+            <tr>
+              <td>
+                Biofuel premium paid
+                <Bar $width={share(result.premium)} $color={theme.colors.red} />
+              </td>
+              <Amount $positive={result.premium < 0}>
+                {formatSigned(-result.premium)}
+              </Amount>
+            </tr>
+
+            <RouteRow>
+              <td colSpan={2}>
+                Then the surplus — {formatInt(surplus)} tCO₂e, one route or the
+                other
+              </td>
+            </RouteRow>
+            <tr>
+              <td>
                 FuelEU penalty avoided
                 <LineNote>
-                  {formatInt(Math.max(result.surplus, 0))} tCO₂e at $
-                  {formatInt(result.penaltyRate)} per tCO₂e
+                  Offsetting your own deficit at ${formatInt(result.penaltyRate)}{" "}
+                  per tCO₂e
                 </LineNote>
                 <Bar
                   $width={share(result.penaltyAvoided)}
@@ -138,36 +152,37 @@ export const LedgerPanel = ({
                 {formatSigned(result.penaltyAvoided)}
               </Amount>
             </tr>
+            <NetRow>
+              <td>Net result, offsetting your own penalty</td>
+              <Amount $positive={result.offsetNet >= 0}>
+                {formatSigned(result.offsetNet)}
+              </Amount>
+            </NetRow>
+
+            <RouteRow>
+              <td colSpan={2}>Or instead</td>
+            </RouteRow>
             <tr>
               <td>
-                EU ETS cost avoided
-                <Bar $width={share(result.ets)} $color={theme.colors.lightBlue} />
+                Profit from pooling the compliance
+                <LineNote>
+                  Selling the units at ${formatInt(result.poolRate)} per tCO₂e
+                </LineNote>
+                <Bar
+                  $width={share(result.poolProfit)}
+                  $color={theme.colors.lightGreen}
+                />
               </td>
-              <Amount $positive={result.ets >= 0}>
-                {formatSigned(result.ets)}
+              <Amount $positive={result.poolProfit >= 0}>
+                {formatSigned(result.poolProfit)}
               </Amount>
             </tr>
-            <SummaryRow>
-              <td>Value created</td>
-              <Amount $positive={result.value >= 0}>
-                {formatSigned(result.value)}
+            <NetRow>
+              <td>Net result, pooling the surplus</td>
+              <Amount $positive={result.poolNet >= 0}>
+                {formatSigned(result.poolNet)}
               </Amount>
-            </SummaryRow>
-            <tr>
-              <td>
-                Biofuel premium paid
-                <Bar $width={share(result.premium)} $color={theme.colors.red} />
-              </td>
-              <Amount $positive={result.premium < 0}>
-                {formatSigned(-result.premium)}
-              </Amount>
-            </tr>
-            <TotalRow>
-              <td>Net result</td>
-              <Amount $positive={result.net >= 0}>
-                {formatSigned(result.net)}
-              </Amount>
-            </TotalRow>
+            </NetRow>
           </tbody>
         </Ledger>
 
@@ -181,25 +196,15 @@ export const LedgerPanel = ({
             <>
               <b>
                 Break-even biofuel premium: $
-                {formatInt(result.tons > 0 ? result.value / result.tons : 0)} per
-                tonne.
+                {formatInt(result.tons > 0 ? result.offsetValue / result.tons : 0)}{" "}
+                per tonne offsetting your own penalty, $
+                {formatInt(result.tons > 0 ? result.poolValue / result.tons : 0)}{" "}
+                pooling it.
               </b>{" "}
               Below that, the switch pays for itself.
             </>
           )}
         </Hint>
-
-        {result.surplus > 0 && (
-          <Alternative>
-            <b>Sold into a pool instead: {formatCompact(result.poolValue)}.</b>{" "}
-            At €{formatInt(inputs.poolPriceEur)} per tCO₂e the same{" "}
-            {formatInt(result.surplus)} tCO₂e fetches{" "}
-            {formatCompact(result.poolValue)} rather than the{" "}
-            {formatCompact(result.penaltyAvoided)} it saves against a penalty.
-            These are alternatives, not additions — a tonne that offsets a
-            deficit is no longer available to sell.
-          </Alternative>
-        )}
       </PanelBody>
     </Panel>
   );

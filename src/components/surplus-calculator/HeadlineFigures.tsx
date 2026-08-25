@@ -61,11 +61,12 @@ export const HeadlineFigures = ({ result }: { result: CalculatorResult }) => (
     </Cell>
     <Cell>
       <Label>Value created</Label>
-      <Value $color={theme.colors.blue}>{formatCompact(result.value)}</Value>
+      <Value $color={theme.colors.blue}>
+        {formatCompact(result.offsetValue)}
+      </Value>
       <Sub>
-        {result.tons > 0
-          ? `$${formatInt(result.value / result.tons)} per tonne of biofuel bunkered`
-          : "penalties avoided plus ETS savings"}
+        offsetting your own penalty · {formatCompact(result.poolValue)} pooling
+        it instead
       </Sub>
     </Cell>
   </Headline>
