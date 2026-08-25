@@ -25,7 +25,7 @@ import {
   type NumericField,
   type RawInputs,
 } from "./model";
-import { formatInt, formatTwo } from "./format";
+import { formatTwo } from "./format";
 import type { QuoteState } from "./useMarketQuotes";
 
 const QuoteRow = styled.div`
@@ -90,7 +90,7 @@ const quoteText = (state: QuoteState, eua: number, fx: number) => {
   }
 };
 
-type HelpTopic = "ciBio" | "ownDeficit";
+type HelpTopic = "ciBio";
 
 interface InputsPanelProps {
   fossil: FossilFuelKey;
@@ -99,7 +99,6 @@ interface InputsPanelProps {
   fuelEf: number;
   eua: number;
   fx: number;
-  penaltyRate: number;
   quoteState: QuoteState;
   openHelp: HelpTopic | null;
   onFossilChange: (fossil: FossilFuelKey) => void;
@@ -116,7 +115,6 @@ export const InputsPanel = ({
   fuelEf,
   eua,
   fx,
-  penaltyRate,
   quoteState,
   openHelp,
   onFossilChange,
@@ -210,55 +208,6 @@ export const InputsPanel = ({
               type="button"
               onClick={() => onAsk("Biofuel GHG intensity")}
             >
-              Ask Ahti about this →
-            </AskLink>
-          </HelpBox>
-        )}
-      </Fieldset>
-
-      <Fieldset>
-        <Legend>Your own position</Legend>
-        <Field>
-          <FieldLabel htmlFor="ownDeficit">
-            Your own FuelEU deficit
-            <HelpToggle
-              type="button"
-              aria-expanded={openHelp === "ownDeficit"}
-              aria-controls="help-ownDeficit"
-              aria-label="What counts as my own deficit?"
-              onClick={() => onToggleHelp("ownDeficit")}
-            >
-              ?
-            </HelpToggle>
-            <FieldHint>Shortfall the surplus covers first</FieldHint>
-          </FieldLabel>
-          <InputShell>
-            <input
-              type="number"
-              id="ownDeficit"
-              min="0"
-              step="50"
-              value={raw.ownDeficit}
-              onChange={(e) => onFieldChange("ownDeficit", e.target.value)}
-            />
-            <Unit>tCO₂e</Unit>
-          </InputShell>
-        </Field>
-        <Meta>
-          Penalty avoided <b>${formatInt(penaltyRate)}</b> per tCO₂e covered ·
-          Annex IV at {formatTwo(fuelCi)} gCO₂e/MJ attained
-        </Meta>
-
-        {openHelp === "ownDeficit" && (
-          <HelpBox id="help-ownDeficit">
-            <p>
-              The compliance shortfall your own vessels are carrying for the
-              same reporting period, in tCO₂e. FuelEU nets the new surplus
-              against it before anything can be pooled, so those tonnes pay off
-              as penalties avoided rather than as units sold. Leave it at zero
-              if your fleet is already compliant.
-            </p>
-            <AskLink type="button" onClick={() => onAsk("My FuelEU deficit")}>
               Ask Ahti about this →
             </AskLink>
           </HelpBox>

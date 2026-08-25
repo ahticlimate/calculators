@@ -140,9 +140,8 @@ const App = () => {
 
                 <LeadText>
                   Set the fuel switch you are considering and see the compliance
-                  surplus it generates, the FuelEU penalties it avoids on your
-                  own deficit, what the rest is worth in a pool, and what the
-                  biofuel premium costs.
+                  surplus it generates, the FuelEU penalty that surplus avoids,
+                  the EU ETS cost it saves, and what the biofuel premium costs.
                 </LeadText>
 
                 <SurplusCalculator />

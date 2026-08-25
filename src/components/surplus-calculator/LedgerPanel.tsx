@@ -82,7 +82,6 @@ const Bar = styled.span<{ $width: number; $color: string }>`
 
 export const LedgerPanel = ({ result }: { result: CalculatorResult }) => {
   const scale = Math.max(
-    result.revenue,
     result.penaltyAvoided,
     result.ets,
     Math.abs(result.premium),
@@ -102,39 +101,20 @@ export const LedgerPanel = ({ result }: { result: CalculatorResult }) => {
             </tr>
           </thead>
           <tbody>
-            {result.covered > 0 && (
-              <tr>
-                <td>
-                  FuelEU penalty avoided
-                  <LineNote>
-                    {formatInt(result.covered)} tCO₂e of your own deficit at $
-                    {formatInt(result.penaltyRate)} per tCO₂e
-                  </LineNote>
-                  <Bar
-                    $width={share(result.penaltyAvoided)}
-                    $color={theme.colors.darkGreen}
-                  />
-                </td>
-                <Amount $positive={result.penaltyAvoided >= 0}>
-                  {formatSigned(result.penaltyAvoided)}
-                </Amount>
-              </tr>
-            )}
             <tr>
               <td>
-                Sale of surplus units
-                {result.covered > 0 && (
-                  <LineNote>
-                    {formatInt(result.sellable)} tCO₂e left to pool
-                  </LineNote>
-                )}
+                FuelEU penalty avoided
+                <LineNote>
+                  {formatInt(Math.max(result.surplus, 0))} tCO₂e at $
+                  {formatInt(result.penaltyRate)} per tCO₂e
+                </LineNote>
                 <Bar
-                  $width={share(result.revenue)}
+                  $width={share(result.penaltyAvoided)}
                   $color={theme.colors.green}
                 />
               </td>
-              <Amount $positive={result.revenue >= 0}>
-                {formatSigned(result.revenue)}
+              <Amount $positive={result.penaltyAvoided >= 0}>
+                {formatSigned(result.penaltyAvoided)}
               </Amount>
             </tr>
             <tr>

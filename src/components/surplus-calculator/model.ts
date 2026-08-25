@@ -7,15 +7,16 @@
 
 export const TARGET_INTENSITY = 89.3368; // FuelEU 2026 target, gCO2e/MJ
 export const BIOFUEL_LCV = 37; // biofuel energy content, MJ/kg
-export const POOL_PRICE_EUR = 80; // EUR per tCO2e paid for units — not shown on the page
 export const FALLBACK_QUOTE_DATE = "18 Aug 2026";
 export const FALLBACK_FX = 1.1573;
 export const CONTACT_EMAIL = "info@ahticlimate.com";
 
-/** Regulation (EU) 2023/1805 Annex IV: EUR per tonne of VLSFO equivalent. */
-export const PENALTY_EUR_PER_TONNE_VLSFO = 2400;
-/** Energy content of one tonne of VLSFO, MJ. */
-export const VLSFO_MJ_PER_TONNE = 41000;
+/**
+ * Assumed cost of a FuelEU compliance deficit, EUR per tCO2e. The surplus is
+ * valued at this rate throughout: every tonne generated is a tonne of penalty
+ * that does not have to be paid.
+ */
+export const PENALTY_EUR_PER_TONNE = 640;
 
 export type FossilFuelKey = "hfo" | "lfo" | "mgo";
 
@@ -38,28 +39,12 @@ export const FOSSIL_FUELS: Record<FossilFuelKey, FossilFuel> = {
 
 export const FOSSIL_FUEL_ORDER: FossilFuelKey[] = ["hfo", "lfo", "mgo"];
 
-/**
- * FuelEU penalty per tonne of CO2e of compliance deficit, in EUR.
- *
- * Annex IV prices a deficit as |compliance balance| / (attained intensity × 41 000)
- * × 2 400 EUR. Dividing 1e6 gCO2e by that gives the rate per tCO2e. The attained
- * intensity is approximated by the fossil grade being replaced, which is what a
- * vessel still burning conventional fuel reports.
- */
-export const penaltyRateEur = (attainedIntensity: number): number =>
-  attainedIntensity > 0
-    ? (1e6 / (attainedIntensity * VLSFO_MJ_PER_TONNE)) *
-      PENALTY_EUR_PER_TONNE_VLSFO
-    : 0;
-
 export interface CalculatorInputs {
   fossil: FossilFuelKey;
   /** Tonnes of fossil fuel replaced */
   tons: number;
   /** Certified well-to-wake intensity of the biofuel, gCO2e/MJ */
   ciBio: number;
-  /** Compliance deficit in the operator's own FuelEU perimeter, tCO2e */
-  ownDeficit: number;
   /** Fossil fuel price, USD per tonne */
   priceFossil: number;
   /** Biofuel price, USD per tonne */
@@ -76,18 +61,12 @@ export interface CalculatorResult {
   fuel: FossilFuel;
   /** Compliance surplus generated, tCO2e */
   surplus: number;
-  /** Surplus absorbed by the operator's own deficit, tCO2e */
-  covered: number;
-  /** Surplus left over to sell into a pool, tCO2e */
-  sellable: number;
-  /** FuelEU penalty rate applied, USD per tCO2e */
+  /** Penalty rate applied, USD per tCO2e */
   penaltyRate: number;
-  /** FuelEU penalty avoided by covering the own deficit, USD */
+  /** FuelEU penalty avoided by the surplus, USD */
   penaltyAvoided: number;
   /** EU ETS cost avoided, USD */
   ets: number;
-  /** Sale of the remaining surplus units, USD */
-  revenue: number;
   /** Biofuel premium paid, USD */
   premium: number;
   /** Everything the switch brings in, USD */
@@ -109,7 +88,6 @@ export const DEFAULT_FOSSIL: FossilFuelKey = "mgo";
 export const DEFAULT_RAW_INPUTS: RawInputs = {
   tons: "1000",
   ciBio: "15",
-  ownDeficit: "0",
   priceFossil: String(FOSSIL_FUELS[DEFAULT_FOSSIL].price),
   priceBio: "1275",
   eua: "81.35",
@@ -128,7 +106,6 @@ export const toInputs = (
   fossil,
   tons: toNumber(raw.tons),
   ciBio: toNumber(raw.ciBio),
-  ownDeficit: toNumber(raw.ownDeficit),
   priceFossil: toNumber(raw.priceFossil),
   priceBio: toNumber(raw.priceBio),
   eua: toNumber(raw.eua),
@@ -147,31 +124,21 @@ export const calculate = (
 
   // tCO2e, all energy assumed to be in scope
   const surplus = ((TARGET_INTENSITY - ciBio) * megajoules) / 1e6;
-  const available = Math.max(surplus, 0);
 
-  // The surplus is netted against the operator's own deficit before anything
-  // can be pooled, so those tonnes pay off as penalties avoided, not as sales.
-  const covered = Math.min(available, Math.max(inputs.ownDeficit, 0));
-  const sellable = available - covered;
-
-  const penaltyRate = penaltyRateEur(fuel.ci) * fx;
-  const penaltyAvoided = covered * penaltyRate;
-  const revenue = sellable * POOL_PRICE_EUR * fx;
+  const penaltyRate = PENALTY_EUR_PER_TONNE * fx;
+  const penaltyAvoided = Math.max(surplus, 0) * penaltyRate;
   const ets = inputs.tons * fuel.ef * inputs.eua * fx;
   const premium = inputs.tons * (inputs.priceBio - inputs.priceFossil);
-  const value = revenue + penaltyAvoided + ets;
+  const value = penaltyAvoided + ets;
 
   return {
     tons: inputs.tons,
     fx,
     fuel,
     surplus,
-    covered,
-    sellable,
     penaltyRate,
     penaltyAvoided,
     ets,
-    revenue,
     premium,
     value,
     net: value - premium,

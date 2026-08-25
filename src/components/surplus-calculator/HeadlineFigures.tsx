@@ -54,18 +54,9 @@ export const HeadlineFigures = ({ result }: { result: CalculatorResult }) => (
         {formatInt(Math.max(result.surplus, 0))}
       </Value>
       <Sub>
-        {result.covered > 0 ? (
-          <>
-            tCO₂e · {formatInt(result.covered)} covers your own deficit,{" "}
-            {formatInt(result.sellable)} left to pool
-          </>
-        ) : (
-          <>
-            tCO₂e ·{" "}
-            {formatTwo(result.tons > 0 ? result.surplus / result.tons : 0)} t per
-            tonne of biofuel
-          </>
-        )}
+        tCO₂e ·{" "}
+        {formatTwo(result.tons > 0 ? result.surplus / result.tons : 0)} t per
+        tonne of biofuel
       </Sub>
     </Cell>
     <Cell>
@@ -74,7 +65,7 @@ export const HeadlineFigures = ({ result }: { result: CalculatorResult }) => (
       <Sub>
         {result.tons > 0
           ? `$${formatInt(result.value / result.tons)} per tonne of biofuel bunkered`
-          : "penalties avoided, unit sales and ETS savings"}
+          : "penalties avoided plus ETS savings"}
       </Sub>
     </Cell>
   </Headline>

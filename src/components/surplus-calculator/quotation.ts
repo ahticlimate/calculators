@@ -33,30 +33,11 @@ export const buildQuotationSummary = (
     `Tonnes replaced: ${plainInt(result.tons)} t`,
     `Biofuel GHG intensity: ${plainOne(inputs.ciBio)} gCO2e/MJ`,
     `Compliance surplus generated: ${plainInt(result.surplus)} tCO2e (assuming all energy in scope)`,
-  );
-
-  if (inputs.ownDeficit > 0) {
-    lines.push(
-      `Own FuelEU deficit: ${plainInt(inputs.ownDeficit)} tCO2e`,
-      `Surplus covering own deficit: ${plainInt(result.covered)} tCO2e`,
-      `Surplus available to pool: ${plainInt(result.sellable)} tCO2e`,
-    );
-  }
-
-  lines.push(
     "",
     `Fossil fuel price: ${plainInt(inputs.priceFossil)} USD/t`,
     `Biofuel price: ${plainInt(inputs.priceBio)} USD/t`,
     `Biofuel premium: ${plainInt(result.premium)} USD`,
-  );
-
-  if (result.covered > 0) {
-    lines.push(
-      `FuelEU penalty avoided: ${plainInt(result.penaltyAvoided)} USD (Annex IV, ${plainInt(result.penaltyRate)} USD per tCO2e)`,
-    );
-  }
-
-  lines.push(
+    `FuelEU penalty avoided: ${plainInt(result.penaltyAvoided)} USD (${plainInt(result.penaltyRate)} USD per tCO2e)`,
     `ETS cost avoided: ${plainInt(result.ets)} USD (EUA ${plainTwo(inputs.eua)} EUR, EURUSD ${plainTwo(result.fx)})`,
     `Value created: ${plainInt(result.value)} USD`,
     `Net result: ${plainInt(result.net)} USD`,

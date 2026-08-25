@@ -112,7 +112,6 @@ export const SurplusCalculator = () => {
         fuelEf={result.fuel.ef}
         eua={inputs.eua}
         fx={inputs.fx}
-        penaltyRate={result.penaltyRate}
         quoteState={quoteState}
         openHelp={openHelp}
         onFossilChange={handleFossilChange}
@@ -129,8 +128,6 @@ export const SurplusCalculator = () => {
         <LedgerPanel result={result} />
         <QuoteRequestCta
           surplus={result.surplus}
-          covered={result.covered}
-          sellable={result.sellable}
           email={email}
           phone={phone}
           note={note}

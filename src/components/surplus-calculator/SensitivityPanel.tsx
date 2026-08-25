@@ -58,10 +58,8 @@ export const SensitivityPanel = ({ inputs }: { inputs: CalculatorInputs }) => (
         })}
       </Strip>
       <Hint>
-        Lower certified intensity means more units from the same tonnage.
-        {inputs.ownDeficit > 0
-          ? " Tonnes that cover your own deficit are worth far more than pooled units, so the curve steepens until the deficit is closed."
-          : ""}
+        Lower certified intensity means more surplus, and more penalty avoided,
+        from the same tonnage.
       </Hint>
     </PanelBody>
   </Panel>

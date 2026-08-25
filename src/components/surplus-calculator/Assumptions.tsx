@@ -1,10 +1,6 @@
 import styled from "styled-components";
 import { theme } from "../../theme";
-import {
-  PENALTY_EUR_PER_TONNE_VLSFO,
-  VLSFO_MJ_PER_TONNE,
-  type CalculatorResult,
-} from "./model";
+import { PENALTY_EUR_PER_TONNE, type CalculatorResult } from "./model";
 import { formatInt } from "./format";
 
 const Caution = styled.aside`
@@ -81,12 +77,13 @@ export const Assumptions = ({ result }: { result: CalculatorResult }) => (
         pattern and we will run it properly.
       </p>
       <p>
-        The surplus is netted against your own position first. Whatever covers a
-        deficit inside your own FuelEU reporting perimeter pays off as penalties
-        avoided rather than as units sold, which is why the deficit figure moves
-        the result so much more than the tonnage does. Only the remainder can be
-        pooled. Final volumes are whatever your verifier confirms and THETIS-MRV
-        records.
+        The surplus is valued here at the cost of the compliance deficit it
+        offsets, so the figures assume every tonne displaces a penalty that
+        would otherwise be paid — whether in your own reporting perimeter or in
+        the pool you supply. If there is no deficit to offset, the surplus is
+        worth whatever a buyer will pay for it instead, which is a negotiated
+        price rather than the penalty rate. Final volumes are whatever your
+        verifier confirms and THETIS-MRV records.
       </p>
     </Caution>
 
@@ -106,18 +103,12 @@ export const Assumptions = ({ result }: { result: CalculatorResult }) => (
           content of 37 MJ/kg.
         </li>
         <li>
-          Penalty avoided follows the Annex IV formula: the deficit divided by
-          (attained intensity × {formatInt(VLSFO_MJ_PER_TONNE)} MJ), priced at €
-          {formatInt(PENALTY_EUR_PER_TONNE_VLSFO)} per tonne of VLSFO
-          equivalent. At {result.fuel.name} that is ${" "}
-          {formatInt(result.penaltyRate)} per tCO₂e. Attained intensity is taken
-          from the fossil grade you are replacing; your verified fleet average
-          is the number that counts in a real filing.
-        </li>
-        <li>
-          No allowance for the repeat-offender multiplier, which raises the
-          penalty by a further 10% for each consecutive year in deficit from the
-          second onwards.
+          The surplus is valued as direct penalty avoidance at a flat €
+          {formatInt(PENALTY_EUR_PER_TONNE)} per tCO₂e, which is $
+          {formatInt(result.penaltyRate)} at the EUR/USD rate above. The
+          statutory figure varies with the attained intensity of the ship and
+          rises by a further 10% for each consecutive year in deficit; we quote
+          a single indicative rate here.
         </li>
         <li>
           ETS saving assumes certified sustainable biofuel is zero-rated, at
