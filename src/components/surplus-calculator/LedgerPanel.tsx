@@ -138,39 +138,13 @@ export const LedgerPanel = ({ result }: { result: CalculatorResult }) => {
             </RouteRow>
             <tr>
               <td>
-                FuelEU penalty avoided
-                <LineNote>
-                  Offsetting your own deficit at ${formatInt(result.penaltyRate)}{" "}
-                  per tCO₂e
-                </LineNote>
-                <Bar
-                  $width={share(result.penaltyAvoided)}
-                  $color={theme.colors.green}
-                />
-              </td>
-              <Amount $positive={result.penaltyAvoided >= 0}>
-                {formatSigned(result.penaltyAvoided)}
-              </Amount>
-            </tr>
-            <NetRow>
-              <td>Net result, offsetting your own penalty</td>
-              <Amount $positive={result.offsetNet >= 0}>
-                {formatSigned(result.offsetNet)}
-              </Amount>
-            </NetRow>
-
-            <RouteRow>
-              <td colSpan={2}>Or instead</td>
-            </RouteRow>
-            <tr>
-              <td>
                 Profit from pooling the compliance
                 <LineNote>
                   Selling the units at ${formatInt(result.poolRate)} per tCO₂e
                 </LineNote>
                 <Bar
                   $width={share(result.poolProfit)}
-                  $color={theme.colors.lightGreen}
+                  $color={theme.colors.green}
                 />
               </td>
               <Amount $positive={result.poolProfit >= 0}>
@@ -181,6 +155,32 @@ export const LedgerPanel = ({ result }: { result: CalculatorResult }) => {
               <td>Net result, pooling the surplus</td>
               <Amount $positive={result.poolNet >= 0}>
                 {formatSigned(result.poolNet)}
+              </Amount>
+            </NetRow>
+
+            <RouteRow>
+              <td colSpan={2}>Or instead</td>
+            </RouteRow>
+            <tr>
+              <td>
+                FuelEU penalty avoided
+                <LineNote>
+                  Offsetting your own deficit at ${formatInt(result.penaltyRate)}{" "}
+                  per tCO₂e
+                </LineNote>
+                <Bar
+                  $width={share(result.penaltyAvoided)}
+                  $color={theme.colors.lightGreen}
+                />
+              </td>
+              <Amount $positive={result.penaltyAvoided >= 0}>
+                {formatSigned(result.penaltyAvoided)}
+              </Amount>
+            </tr>
+            <NetRow>
+              <td>Net result, offsetting your own penalty</td>
+              <Amount $positive={result.offsetNet >= 0}>
+                {formatSigned(result.offsetNet)}
               </Amount>
             </NetRow>
           </tbody>
@@ -196,10 +196,10 @@ export const LedgerPanel = ({ result }: { result: CalculatorResult }) => {
             <>
               <b>
                 Break-even biofuel premium: $
-                {formatInt(result.tons > 0 ? result.offsetValue / result.tons : 0)}{" "}
-                per tonne offsetting your own penalty, $
                 {formatInt(result.tons > 0 ? result.poolValue / result.tons : 0)}{" "}
-                pooling it.
+                per tonne pooling the surplus, $
+                {formatInt(result.tons > 0 ? result.offsetValue / result.tons : 0)}{" "}
+                offsetting your own penalty.
               </b>{" "}
               Below that, the switch pays for itself.
             </>

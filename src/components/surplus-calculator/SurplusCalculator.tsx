@@ -47,7 +47,7 @@ export const SurplusCalculator = () => {
     }));
   }, []);
 
-  const { state: quoteState, refresh } = useMarketQuotes(applyQuotes);
+  const { status: quoteStatus, refresh } = useMarketQuotes(applyQuotes);
 
   const handleFossilChange = (next: FossilFuelKey) => {
     setFossil(next);
@@ -110,9 +110,7 @@ export const SurplusCalculator = () => {
         raw={raw}
         fuelCi={result.fuel.ci}
         fuelEf={result.fuel.ef}
-        eua={inputs.eua}
-        fx={inputs.fx}
-        quoteState={quoteState}
+        quoteStatus={quoteStatus}
         openHelp={openHelp}
         onFossilChange={handleFossilChange}
         onFieldChange={handleFieldChange}

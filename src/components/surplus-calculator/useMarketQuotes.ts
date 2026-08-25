@@ -7,7 +7,15 @@ const FX_SRC = [
   "https://open.er-api.com/v6/latest/EUR",
 ];
 
-export type QuoteState = "checking" | "live" | "partial" | "stale";
+/** Status of a single quote, tracked per source so each field can say which it is. */
+export type SourceState = "checking" | "live" | "stale";
+
+export interface QuoteStatus {
+  eua: SourceState;
+  fx: SourceState;
+}
+
+const CHECKING: QuoteStatus = { eua: "checking", fx: "checking" };
 
 export interface MarketQuotes {
   eua?: number;
@@ -55,7 +63,7 @@ const loadFx = async (): Promise<number> => {
  * Whatever fails simply keeps the fallback figure already in the form.
  */
 export const useMarketQuotes = (onQuotes: (quotes: MarketQuotes) => void) => {
-  const [state, setState] = useState<QuoteState>("checking");
+  const [status, setStatus] = useState<QuoteStatus>(CHECKING);
   const onQuotesRef = useRef(onQuotes);
 
   useEffect(() => {
@@ -63,27 +71,21 @@ export const useMarketQuotes = (onQuotes: (quotes: MarketQuotes) => void) => {
   });
 
   const run = useCallback(() => {
-    const eua = loadEua().then(
+    void loadEua().then(
       (price) => {
         onQuotesRef.current({ eua: price });
-        return true;
+        setStatus((prev) => ({ ...prev, eua: "live" }));
       },
-      () => false,
+      () => setStatus((prev) => ({ ...prev, eua: "stale" })),
     );
 
-    const fx = loadFx().then(
+    void loadFx().then(
       (rate) => {
         onQuotesRef.current({ fx: Math.round(rate * 10000) / 10000 });
-        return true;
+        setStatus((prev) => ({ ...prev, fx: "live" }));
       },
-      () => false,
+      () => setStatus((prev) => ({ ...prev, fx: "stale" })),
     );
-
-    void Promise.all([eua, fx]).then(([euaOk, fxOk]) => {
-      if (euaOk && fxOk) setState("live");
-      else if (euaOk || fxOk) setState("partial");
-      else setState("stale");
-    });
   }, []);
 
   // The first look-up runs on mount; "checking" is already the initial state.
@@ -92,9 +94,9 @@ export const useMarketQuotes = (onQuotes: (quotes: MarketQuotes) => void) => {
   }, [run]);
 
   const refresh = useCallback(() => {
-    setState("checking");
+    setStatus(CHECKING);
     run();
   }, [run]);
 
-  return { state, refresh };
+  return { status, refresh };
 };

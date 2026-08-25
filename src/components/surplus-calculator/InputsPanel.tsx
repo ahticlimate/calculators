@@ -26,7 +26,7 @@ import {
   type RawInputs,
 } from "./model";
 import { formatTwo } from "./format";
-import type { QuoteState } from "./useMarketQuotes";
+import type { QuoteStatus, SourceState } from "./useMarketQuotes";
 
 const QuoteRow = styled.div`
   display: flex;
@@ -48,7 +48,7 @@ const QuoteSource = styled.div`
   }
 `;
 
-const Dot = styled.span<{ $state: QuoteState }>`
+const Dot = styled.span<{ $state: SourceState }>`
   display: inline-block;
   width: 7px;
   height: 7px;
@@ -59,35 +59,42 @@ const Dot = styled.span<{ $state: QuoteState }>`
     p.$state === "live"
       ? theme.colors.green
       : p.$state === "checking"
-        ? theme.colors.dimBlue
+        ? theme.colors.grey(3)
         : "#E0A31F"};
 `;
 
-const quoteText = (state: QuoteState, eua: number, fx: number) => {
+/** Sits under its field so each quote says whether it refreshed or not. */
+const FieldStatus = styled.div`
+  grid-column: 1 / -1;
+  text-align: right;
+  ${theme.fontNormal};
+  ${theme.fontSize(-2)};
+  color: ${theme.colors.dimBlue};
+  margin: -2px 0 ${theme.spacing(1)};
+`;
+
+const sourceLabel = (state: SourceState) => {
   switch (state) {
     case "checking":
-      return <>Checking live quotes…</>;
+      return "checking…";
     case "live":
-      return (
-        <>
-          Live: EUA <b>€{formatTwo(eua)}</b> · EUR/USD <b>{formatTwo(fx)}</b>
-        </>
-      );
-    case "partial":
-      return (
-        <>
-          Partly live — the other figure is the {FALLBACK_QUOTE_DATE} close.
-          Edit above if needed.
-        </>
-      );
+      return "updated just now";
     case "stale":
-      return (
-        <>
-          Live quotes unavailable — using the <b>{FALLBACK_QUOTE_DATE}</b>{" "}
-          close. Edit above if needed.
-        </>
-      );
+      return `not updated — ${FALLBACK_QUOTE_DATE} close`;
   }
+};
+
+const summary = (status: QuoteStatus) => {
+  if (status.eua === "checking" || status.fx === "checking") {
+    return "Checking live quotes…";
+  }
+  if (status.eua === "live" && status.fx === "live") {
+    return "Both quotes updated. Edit either if needed.";
+  }
+  if (status.eua === "stale" && status.fx === "stale") {
+    return "No live quotes. Both figures are editable above.";
+  }
+  return "One quote updated, the other is editable above.";
 };
 
 type HelpTopic = "ciBio";
@@ -97,9 +104,7 @@ interface InputsPanelProps {
   raw: RawInputs;
   fuelCi: number;
   fuelEf: number;
-  eua: number;
-  fx: number;
-  quoteState: QuoteState;
+  quoteStatus: QuoteStatus;
   openHelp: HelpTopic | null;
   onFossilChange: (fossil: FossilFuelKey) => void;
   onFieldChange: (field: NumericField, value: string) => void;
@@ -113,9 +118,7 @@ export const InputsPanel = ({
   raw,
   fuelCi,
   fuelEf,
-  eua,
-  fx,
-  quoteState,
+  quoteStatus,
   openHelp,
   onFossilChange,
   onFieldChange,
@@ -264,6 +267,10 @@ export const InputsPanel = ({
             />
             <Unit>€/t</Unit>
           </InputShell>
+          <FieldStatus>
+            <Dot $state={quoteStatus.eua} />
+            {sourceLabel(quoteStatus.eua)}
+          </FieldStatus>
         </Field>
         <Field>
           <FieldLabel htmlFor="poolPriceEur">
@@ -295,13 +302,14 @@ export const InputsPanel = ({
             />
             <Unit>rate</Unit>
           </InputShell>
+          <FieldStatus>
+            <Dot $state={quoteStatus.fx} />
+            {sourceLabel(quoteStatus.fx)}
+          </FieldStatus>
         </Field>
 
         <QuoteRow>
-          <QuoteSource aria-live="polite">
-            <Dot $state={quoteState} />
-            {quoteText(quoteState, eua, fx)}
-          </QuoteSource>
+          <QuoteSource aria-live="polite">{summary(quoteStatus)}</QuoteSource>
           <SmallButton type="button" onClick={onRefresh}>
             Refresh
           </SmallButton>
