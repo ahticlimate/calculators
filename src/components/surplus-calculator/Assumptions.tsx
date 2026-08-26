@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import styled from "styled-components";
 import { theme } from "../../theme";
 import { PENALTY_EUR_PER_TONNE, type CalculatorResult } from "./model";
@@ -55,6 +56,13 @@ const Footnotes = styled.footer`
   }
 `;
 
+const ConsentLine = styled.p`
+  margin: ${theme.spacing(2)} 0 0;
+  ${theme.fontNormal};
+  ${theme.fontSize(-1)};
+  color: ${theme.colors.dimBlue};
+`;
+
 const Stamp = styled.div`
   ${theme.fontLabelBold};
   ${theme.fontSize(-3)};
@@ -63,7 +71,13 @@ const Stamp = styled.div`
   margin-top: ${theme.spacing(3)};
 `;
 
-export const Assumptions = ({ result }: { result: CalculatorResult }) => (
+export const Assumptions = ({
+  result,
+  consentNote,
+}: {
+  result: CalculatorResult;
+  consentNote?: ReactNode;
+}) => (
   <>
     <Caution>
       <h4>Your actual benefit depends on your FuelEU exposure</h4>
@@ -129,6 +143,7 @@ export const Assumptions = ({ result }: { result: CalculatorResult }) => (
           case by case.
         </li>
       </ul>
+      {consentNote && <ConsentLine>{consentNote}</ConsentLine>}
       <Stamp>© Ahti Climate</Stamp>
     </Footnotes>
   </>

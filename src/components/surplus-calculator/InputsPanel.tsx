@@ -27,6 +27,44 @@ import { formatTwo } from "./format";
 import { NumberField } from "./NumberField";
 import type { QuoteStatus, SourceState } from "./useMarketQuotes";
 
+const CalculateRow = styled.div`
+  margin-top: ${theme.spacing(3)};
+  padding-top: ${theme.spacing(3)};
+  border-top: 1px solid ${theme.colors.grey(4)};
+`;
+
+const CalculateButton = styled.button<{ $dirty: boolean }>`
+  width: 100%;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  ${theme.fontLabelBold};
+  font-size: 16px;
+  padding: ${theme.spacing(2)} ${theme.spacing(3)};
+  color: ${theme.colors.white};
+  background: ${(p) => (p.$dirty ? theme.colors.blue : theme.colors.grey(2))};
+  transition: background 0.18s ease;
+
+  &:hover {
+    background: ${(p) =>
+      p.$dirty ? theme.colors.darkBlue : theme.colors.grey(2)};
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${theme.colors.blue};
+    outline-offset: 2px;
+  }
+`;
+
+const CalculateNote = styled.p`
+  margin: ${theme.spacing(1)} 0 0;
+  ${theme.fontNormal};
+  ${theme.fontSize(-2)};
+  color: ${theme.colors.dimBlue};
+  line-height: 1.5;
+  text-align: center;
+`;
+
 const QuoteRow = styled.div`
   display: flex;
   align-items: center;
@@ -104,6 +142,9 @@ interface InputsPanelProps {
   fuelCi: number;
   fuelEf: number;
   quoteStatus: QuoteStatus;
+  dirty: boolean;
+  recording: boolean;
+  onCalculate: () => void;
   openHelp: HelpTopic | null;
   onFossilChange: (fossil: FossilFuelKey) => void;
   onFieldChange: (field: NumericField, value: string) => void;
@@ -118,6 +159,9 @@ export const InputsPanel = ({
   fuelCi,
   fuelEf,
   quoteStatus,
+  dirty,
+  recording,
+  onCalculate,
   openHelp,
   onFossilChange,
   onFieldChange,
@@ -267,6 +311,19 @@ export const InputsPanel = ({
           </SmallButton>
         </QuoteRow>
       </Fieldset>
+
+      <CalculateRow>
+        <CalculateButton type="button" $dirty={dirty} onClick={onCalculate}>
+          {dirty ? "Calculate" : "Recalculate"}
+        </CalculateButton>
+        <CalculateNote aria-live="polite">
+          {dirty
+            ? "Figures changed — the results still show the last calculation."
+            : recording
+              ? "Results are up to date. Your figures are recorded when you calculate."
+              : "Results are up to date."}
+        </CalculateNote>
+      </CalculateRow>
     </PanelBody>
   </Panel>
 );

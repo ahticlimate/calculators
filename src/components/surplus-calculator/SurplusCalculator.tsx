@@ -21,13 +21,20 @@ import {
 } from "./quotation";
 import { useMarketQuotes, type MarketQuotes } from "./useMarketQuotes";
 import { loadInputs, saveInputs } from "./storage";
+import { loadConsent, saveConsent, type ConsentState } from "./consent";
+import { submitInputs } from "./submitInputs";
+import { ConsentBanner, ConsentFootnote } from "./ConsentBanner";
 
 const EMPTY_NOTE = { text: "", warn: false };
 
 export const SurplusCalculator = () => {
   const [stored] = useState(loadInputs);
+  // `raw`/`fossil` are what the form shows; `committed` is what the results are
+  // built from, so typing never makes the figures jump around mid-edit.
   const [fossil, setFossil] = useState<FossilFuelKey>(stored.fossil);
   const [raw, setRaw] = useState(stored.raw);
+  const [committed, setCommitted] = useState(stored);
+  const [consent, setConsent] = useState<ConsentState>(loadConsent);
   const [openHelp, setOpenHelp] = useState<HelpTopic | null>(null);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -48,15 +55,40 @@ export const SurplusCalculator = () => {
   // Everything typed by hand is kept locally so a return visit starts filled in.
   useEffect(() => saveInputs(fossil, raw), [fossil, raw]);
 
-  const inputs = useMemo(() => toInputs(fossil, raw), [fossil, raw]);
+  const inputs = useMemo(
+    () => toInputs(committed.fossil, committed.raw),
+    [committed],
+  );
   const result = useMemo(() => calculate(inputs), [inputs]);
 
+  const dirty =
+    fossil !== committed.fossil ||
+    JSON.stringify(raw) !== JSON.stringify(committed.raw);
+
+  const handleCalculate = () => {
+    const next = { fossil, raw };
+    setCommitted(next);
+
+    if (consent === "granted") {
+      const nextInputs = toInputs(fossil, raw);
+      void submitInputs(nextInputs, calculate(nextInputs));
+    }
+  };
+
+  const handleConsent = (granted: boolean) => {
+    const state: ConsentState = granted ? "granted" : "denied";
+    setConsent(state);
+    saveConsent(state);
+  };
+
   const applyQuotes = useCallback((quotes: MarketQuotes) => {
-    setRaw((prev) => ({
-      ...prev,
+    const patch = {
       ...(quotes.eua !== undefined ? { eua: String(quotes.eua) } : {}),
       ...(quotes.fx !== undefined ? { fx: String(quotes.fx) } : {}),
-    }));
+    };
+    setRaw((prev) => ({ ...prev, ...patch }));
+    // A refreshed quote is not an edit the operator has to confirm.
+    setCommitted((prev) => ({ ...prev, raw: { ...prev.raw, ...patch } }));
   }, []);
 
   const { status: quoteStatus, refresh } = useMarketQuotes(applyQuotes);
@@ -150,13 +182,18 @@ export const SurplusCalculator = () => {
   };
 
   return (
-    <Columns>
+    <>
+      {consent === "unset" && <ConsentBanner onDecide={handleConsent} />}
+      <Columns>
       <InputsPanel
         fossil={fossil}
         raw={raw}
         fuelCi={result.fuel.ci}
         fuelEf={result.fuel.ef}
         quoteStatus={quoteStatus}
+        dirty={dirty}
+        recording={consent === "granted"}
+        onCalculate={handleCalculate}
         openHelp={openHelp}
         onFossilChange={handleFossilChange}
         onFieldChange={handleFieldChange}
@@ -197,8 +234,17 @@ export const SurplusCalculator = () => {
           onSend={handleFuelSend}
         />
         <SensitivityPanel inputs={inputs} />
-        <Assumptions result={result} />
+        <Assumptions
+          result={result}
+          consentNote={
+            <ConsentFootnote
+              granted={consent === "granted"}
+              onChange={handleConsent}
+            />
+          }
+        />
       </div>
-    </Columns>
+      </Columns>
+    </>
   );
 };
