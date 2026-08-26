@@ -1,0 +1,5 @@
+# Copied into dist/ by the build, so these rules also apply to a deploy made by
+# pointing Netlify at the dist folder, where netlify.toml at the repo root is
+# never read. Keep in sync with netlify.toml. First match wins.
+/api/*  /.netlify/functions/:splat  200
+/*      /index.html                 200
