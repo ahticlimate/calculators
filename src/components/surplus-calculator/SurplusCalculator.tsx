@@ -193,6 +193,7 @@ export const SurplusCalculator = () => {
         quoteStatus={quoteStatus}
         dirty={dirty}
         recording={consent === "granted"}
+        consentAnswered={consent !== "unset"}
         onCalculate={handleCalculate}
         openHelp={openHelp}
         onFossilChange={handleFossilChange}

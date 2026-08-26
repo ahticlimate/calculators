@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const EUA_SRC = "https://stooq.com/q/l/?s=ck.f&f=sd2t2ohlc&h&e=csv";
-const PROXY = "https://api.allorigins.win/raw?url=";
+/**
+ * Served by netlify/functions/eua.mjs. It has to be fetched through our own
+ * origin: every public EUA source we can reach either sends no CORS headers or
+ * sits behind a bot challenge. On a plain static preview this path 404s and the
+ * form simply keeps its fallback figure.
+ */
+const EUA_SRC = "/api/eua";
 const FX_SRC = [
   "https://api.frankfurter.dev/v1/latest?base=EUR&symbols=USD",
   "https://open.er-api.com/v6/latest/EUR",
@@ -28,20 +33,12 @@ const getText = async (url: string): Promise<string> => {
   return response.text();
 };
 
-const parseEua = (text: string): number => {
-  const rows = text.trim().split("\n");
-  if (rows.length < 2) throw new Error("empty");
-  const price = parseFloat(rows[1].split(",")[6]);
-  if (!isFinite(price) || price <= 0) throw new Error("bad");
-  return price;
-};
-
 const loadEua = async (): Promise<number> => {
-  try {
-    return parseEua(await getText(EUA_SRC));
-  } catch {
-    return parseEua(await getText(PROXY + encodeURIComponent(EUA_SRC)));
+  const { price } = JSON.parse(await getText(EUA_SRC)) as { price?: number };
+  if (typeof price !== "number" || !isFinite(price) || price <= 0) {
+    throw new Error("bad");
   }
+  return price;
 };
 
 const pickUsd = (text: string): number => {

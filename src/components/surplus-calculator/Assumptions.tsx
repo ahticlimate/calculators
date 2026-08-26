@@ -138,9 +138,11 @@ export const Assumptions = ({
           and reported in THETIS-MRV before it can be pooled.
         </li>
         <li>
-          EUA quote is indicative front-month ICE EUA; FX is the ECB reference
-          rate. Indicative figures only — not an offer. Unit prices are quoted
-          case by case.
+          The EUA figure is taken from the SparkChange Physical Carbon EUA
+          ETC, which is backed by held allowances and quoted in euros. It
+          tracks the allowance price closely but is not the ICE front-month
+          settlement. FX is the ECB reference rate. Indicative figures only —
+          not an offer. Unit prices are quoted case by case.
         </li>
       </ul>
       {consentNote && <ConsentLine>{consentNote}</ConsentLine>}

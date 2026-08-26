@@ -42,12 +42,18 @@ const CalculateButton = styled.button<{ $dirty: boolean }>`
   font-size: 16px;
   padding: ${theme.spacing(2)} ${theme.spacing(3)};
   color: ${theme.colors.white};
-  background: ${(p) => (p.$dirty ? theme.colors.blue : theme.colors.grey(2))};
+  /* Grey is reserved for the disabled state, so it cannot be mistaken for it. */
+  background: ${(p) => (p.$dirty ? theme.colors.blue : theme.colors.dimBlue)};
   transition: background 0.18s ease;
 
-  &:hover {
-    background: ${(p) =>
-      p.$dirty ? theme.colors.darkBlue : theme.colors.grey(2)};
+  &:hover:enabled {
+    background: ${theme.colors.darkBlue};
+  }
+
+  &:disabled {
+    background: ${theme.colors.grey(3)};
+    color: ${theme.colors.grey(1)};
+    cursor: not-allowed;
   }
 
   &:focus-visible {
@@ -144,6 +150,7 @@ interface InputsPanelProps {
   quoteStatus: QuoteStatus;
   dirty: boolean;
   recording: boolean;
+  consentAnswered: boolean;
   onCalculate: () => void;
   openHelp: HelpTopic | null;
   onFossilChange: (fossil: FossilFuelKey) => void;
@@ -161,6 +168,7 @@ export const InputsPanel = ({
   quoteStatus,
   dirty,
   recording,
+  consentAnswered,
   onCalculate,
   openHelp,
   onFossilChange,
@@ -313,15 +321,22 @@ export const InputsPanel = ({
       </Fieldset>
 
       <CalculateRow>
-        <CalculateButton type="button" $dirty={dirty} onClick={onCalculate}>
-          {dirty ? "Calculate" : "Recalculate"}
+        <CalculateButton
+          type="button"
+          $dirty={dirty}
+          disabled={!consentAnswered}
+          onClick={onCalculate}
+        >
+          Calculate
         </CalculateButton>
         <CalculateNote aria-live="polite">
-          {dirty
-            ? "Figures changed — the results still show the last calculation."
-            : recording
-              ? "Results are up to date. Your figures are recorded when you calculate."
-              : "Results are up to date."}
+          {!consentAnswered
+            ? "Answer the recording question at the top of the page first. Either answer works."
+            : dirty
+              ? "Figures changed — the results still show the last calculation."
+              : recording
+                ? "Results are up to date. Your figures are recorded when you calculate."
+                : "Results are up to date."}
         </CalculateNote>
       </CalculateRow>
     </PanelBody>
