@@ -14,6 +14,7 @@ import {
   PanelBody,
   PanelTitle,
   SmallButton,
+  ATTENTION,
 } from "./calculator-styles";
 import {
   FOSSIL_FUELS,
@@ -41,13 +42,13 @@ const CalculateButton = styled.button<{ $dirty: boolean }>`
   ${theme.fontLabelBold};
   font-size: 16px;
   padding: ${theme.spacing(2)} ${theme.spacing(3)};
-  color: ${theme.colors.white};
-  /* Grey is reserved for the disabled state, so it cannot be mistaken for it. */
-  background: ${(p) => (p.$dirty ? theme.colors.blue : theme.colors.dimBlue)};
+  /* Amber while the results are out of date, grey only when disabled. */
+  background: ${(p) => (p.$dirty ? ATTENTION : theme.colors.dimBlue)};
+  color: ${(p) => (p.$dirty ? theme.colors.blackText : theme.colors.white)};
   transition: background 0.18s ease;
 
   &:hover:enabled {
-    background: ${theme.colors.darkBlue};
+    background: ${(p) => (p.$dirty ? "#C98D12" : theme.colors.darkBlue)};
   }
 
   &:disabled {
@@ -62,11 +63,11 @@ const CalculateButton = styled.button<{ $dirty: boolean }>`
   }
 `;
 
-const CalculateNote = styled.p`
+const CalculateNote = styled.p<{ $dirty?: boolean }>`
   margin: ${theme.spacing(1)} 0 0;
   ${theme.fontNormal};
   ${theme.fontSize(-2)};
-  color: ${theme.colors.dimBlue};
+  color: ${(p) => (p.$dirty ? "#8A6200" : theme.colors.dimBlue)};
   line-height: 1.5;
   text-align: center;
 `;
@@ -103,7 +104,7 @@ const Dot = styled.span<{ $state: SourceState }>`
       ? theme.colors.green
       : p.$state === "checking"
         ? theme.colors.grey(3)
-        : "#E0A31F"};
+        : ATTENTION};
 `;
 
 /** Sits under its field so each quote says whether it refreshed or not. */
@@ -329,7 +330,7 @@ export const InputsPanel = ({
         >
           Calculate
         </CalculateButton>
-        <CalculateNote aria-live="polite">
+        <CalculateNote $dirty={dirty} aria-live="polite">
           {!consentAnswered
             ? "Answer the recording question at the top of the page first. Either answer works."
             : dirty

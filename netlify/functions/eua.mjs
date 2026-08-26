@@ -81,5 +81,3 @@ export default async () => {
     },
   );
 };
-
-export const config = { path: "/api/eua" };

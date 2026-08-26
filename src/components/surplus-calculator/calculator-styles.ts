@@ -6,6 +6,10 @@ import { breakpoints, theme } from "../../theme";
  * Anything reusable beyond this tool belongs in common-styled-components instead.
  */
 
+/** Amber, used wherever something needs the operator's attention but is not an error. */
+export const ATTENTION = "#E0A31F";
+export const ATTENTION_WASH = "#FDF4E3";
+
 export const Panel = styled.section`
   background: ${theme.colors.white};
   border: 1px solid ${theme.colors.grey(4)};

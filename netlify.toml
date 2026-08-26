@@ -9,6 +9,13 @@
 [build.environment]
   NODE_VERSION = "24"
 
+# Order matters: the first matching rule wins, so the function and the form
+# endpoint have to be claimed before the single-page-app catch-all below.
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
 # Single-page app: serve index.html for any path that is not a real file.
 [[redirects]]
   from = "/*"

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Form declarations</title>
+    <meta name="robots" content="noindex" />
+  </head>
+  <body>
+    <!--
+      Netlify discovers forms by parsing deployed HTML at build time and never
+      sees anything React renders. This page exists only to declare the form and
+      to give the POST a real file to land on, so the single-page-app catch-all
+      rewrite cannot swallow it. Keep the fields in sync with submitInputs.ts.
+    -->
+    <form name="calculator-inputs" data-netlify="true" netlify-honeypot="bot-field">
+      <input type="hidden" name="form-name" value="calculator-inputs" />
+      <input type="text" name="bot-field" />
+      <input type="text" name="fossil" />
+      <input type="text" name="tons" />
+      <input type="text" name="ciBio" />
+      <input type="text" name="priceFossil" />
+      <input type="text" name="priceBio" />
+      <input type="text" name="poolPriceEur" />
+      <input type="text" name="eua" />
+      <input type="text" name="fx" />
+      <input type="text" name="surplus" />
+      <input type="text" name="poolNet" />
+      <input type="text" name="offsetNet" />
+    </form>
+  </body>
+</html>

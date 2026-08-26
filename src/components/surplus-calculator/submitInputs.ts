@@ -1,10 +1,11 @@
 import type { CalculatorInputs, CalculatorResult } from "./model";
 
 /**
- * Netlify Forms takes a urlencoded POST to any path on the site, matched to a
- * form by the `form-name` field. The form itself is declared as hidden static
- * markup in index.html, because Netlify discovers forms by parsing the built
- * HTML at deploy time and never sees anything React renders at runtime.
+ * Netlify Forms matches a urlencoded POST to a form by its `form-name` field.
+ * The form is declared in public/__forms.html: Netlify discovers forms by
+ * parsing deployed HTML at build time and never sees what React renders, and
+ * posting to a real file keeps the single-page-app catch-all rewrite in
+ * netlify.toml from swallowing the request.
  *
  * Figures only — no email, phone or IMO. Those reach Ahti solely through the
  * enquiry mails the operator composes and sends themselves.
@@ -32,7 +33,7 @@ export const submitInputs = async (
   });
 
   try {
-    const response = await fetch("/", {
+    const response = await fetch("/__forms.html", {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       body: body.toString(),

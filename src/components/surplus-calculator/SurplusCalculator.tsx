@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Columns } from "./calculator-styles";
+import styled from "styled-components";
+import { theme } from "../../theme";
+import { ATTENTION, ATTENTION_WASH, Columns } from "./calculator-styles";
 import { Assumptions } from "./Assumptions";
 import { HeadlineFigures } from "./HeadlineFigures";
 import { InputsPanel, type HelpTopic } from "./InputsPanel";
@@ -26,6 +28,39 @@ import { submitInputs } from "./submitInputs";
 import { ConsentBanner, ConsentFootnote } from "./ConsentBanner";
 
 const EMPTY_NOTE = { text: "", warn: false };
+
+/** Dimmed while the figures on screen no longer match the form. */
+const Results = styled.div<{ $stale: boolean }>`
+  opacity: ${(p) => (p.$stale ? 0.5 : 1)};
+  transition: opacity 0.18s ease;
+`;
+
+const StaleNotice = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${theme.spacing(2)};
+  background: ${ATTENTION_WASH};
+  border: 1px solid ${ATTENTION};
+  border-radius: 4px;
+  padding: ${theme.spacing(2)} ${theme.spacing(3)};
+  margin-bottom: ${theme.spacing(3)};
+  ${theme.fontNormal};
+  ${theme.fontSize(-1)};
+  color: #8a6200;
+  line-height: 1.5;
+
+  b {
+    ${theme.fontLabelBold};
+  }
+`;
+
+const StaleDot = styled.span`
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: ${ATTENTION};
+`;
 
 export const SurplusCalculator = () => {
   const [stored] = useState(loadInputs);
@@ -206,8 +241,19 @@ export const SurplusCalculator = () => {
       />
 
       <div>
-        <HeadlineFigures result={result} />
-        <LedgerPanel result={result} />
+        {dirty && (
+          <StaleNotice role="status">
+            <StaleDot />
+            <span>
+              <b>These figures are out of date.</b> They still show the last
+              calculation — press Calculate to bring them up to date.
+            </span>
+          </StaleNotice>
+        )}
+        <Results $stale={dirty}>
+          <HeadlineFigures result={result} />
+          <LedgerPanel result={result} />
+        </Results>
         <QuoteRequestCta
           surplus={result.surplus}
           contact={{

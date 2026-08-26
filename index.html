@@ -13,26 +13,6 @@
     <title>Surplus calculator — Ahti Climate</title>
   </head>
   <body>
-    <!--
-      Netlify discovers forms by parsing the deployed HTML, so this static
-      declaration has to exist even though React posts to it at runtime.
-      Keep the field list in sync with submitInputs.ts.
-    -->
-    <form name="calculator-inputs" data-netlify="true" netlify-honeypot="bot-field" hidden>
-      <input type="hidden" name="form-name" value="calculator-inputs" />
-      <input type="text" name="bot-field" />
-      <input type="text" name="fossil" />
-      <input type="text" name="tons" />
-      <input type="text" name="ciBio" />
-      <input type="text" name="priceFossil" />
-      <input type="text" name="priceBio" />
-      <input type="text" name="poolPriceEur" />
-      <input type="text" name="eua" />
-      <input type="text" name="fx" />
-      <input type="text" name="surplus" />
-      <input type="text" name="poolNet" />
-      <input type="text" name="offsetNet" />
-    </form>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
