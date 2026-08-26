@@ -9,8 +9,6 @@ import { BiofuelOfferCta } from "./BiofuelOfferCta";
 import { SensitivityPanel } from "./SensitivityPanel";
 import {
   CONTACT_EMAIL,
-  DEFAULT_FOSSIL,
-  DEFAULT_RAW_INPUTS,
   FOSSIL_FUELS,
   calculate,
   toInputs,
@@ -22,12 +20,14 @@ import {
   buildQuotationSummary,
 } from "./quotation";
 import { useMarketQuotes, type MarketQuotes } from "./useMarketQuotes";
+import { loadInputs, saveInputs } from "./storage";
 
 const EMPTY_NOTE = { text: "", warn: false };
 
 export const SurplusCalculator = () => {
-  const [fossil, setFossil] = useState<FossilFuelKey>(DEFAULT_FOSSIL);
-  const [raw, setRaw] = useState(DEFAULT_RAW_INPUTS);
+  const [stored] = useState(loadInputs);
+  const [fossil, setFossil] = useState<FossilFuelKey>(stored.fossil);
+  const [raw, setRaw] = useState(stored.raw);
   const [openHelp, setOpenHelp] = useState<HelpTopic | null>(null);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -44,6 +44,9 @@ export const SurplusCalculator = () => {
   const focusTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => () => window.clearTimeout(focusTimer.current), []);
+
+  // Everything typed by hand is kept locally so a return visit starts filled in.
+  useEffect(() => saveInputs(fossil, raw), [fossil, raw]);
 
   const inputs = useMemo(() => toInputs(fossil, raw), [fossil, raw]);
   const result = useMemo(() => calculate(inputs), [inputs]);
