@@ -5,6 +5,7 @@ import { HeadlineFigures } from "./HeadlineFigures";
 import { InputsPanel, type HelpTopic } from "./InputsPanel";
 import { LedgerPanel } from "./LedgerPanel";
 import { QuoteRequestCta } from "./QuoteRequestCta";
+import { BiofuelOfferCta } from "./BiofuelOfferCta";
 import { SensitivityPanel } from "./SensitivityPanel";
 import {
   CONTACT_EMAIL,
@@ -16,7 +17,10 @@ import {
   type FossilFuelKey,
   type NumericField,
 } from "./model";
-import { buildQuotationSummary } from "./quotation";
+import {
+  buildBiofuelOfferSummary,
+  buildQuotationSummary,
+} from "./quotation";
 import { useMarketQuotes, type MarketQuotes } from "./useMarketQuotes";
 
 const EMPTY_NOTE = { text: "", warn: false };
@@ -29,6 +33,11 @@ export const SurplusCalculator = () => {
   const [phone, setPhone] = useState("");
   const [topics, setTopics] = useState<string[]>([]);
   const [note, setNote] = useState(EMPTY_NOTE);
+
+  const [fuelEmail, setFuelEmail] = useState("");
+  const [fuelPhone, setFuelPhone] = useState("");
+  const [imo, setImo] = useState("");
+  const [fuelNote, setFuelNote] = useState(EMPTY_NOTE);
 
   const ctaRef = useRef<HTMLElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -75,6 +84,43 @@ export const SurplusCalculator = () => {
     });
   };
 
+  const openMail = (subject: string, body: string) => {
+    window.location.href =
+      `mailto:${CONTACT_EMAIL}?subject=` +
+      encodeURIComponent(subject) +
+      "&body=" +
+      encodeURIComponent(body);
+  };
+
+  const handleFuelSend = () => {
+    if (!fuelEmail.trim() && !fuelPhone.trim()) {
+      setFuelNote({
+        text: "Add an email or a phone number so we can reach you.",
+        warn: true,
+      });
+      return;
+    }
+
+    setFuelNote({
+      text: "Opening your email client. Send the message and we will be in touch.",
+      warn: false,
+    });
+
+    openMail(
+      "Request for offer - marine biofuel",
+      buildBiofuelOfferSummary(
+        inputs,
+        result,
+        {
+          email: fuelEmail.trim(),
+          phone: fuelPhone.trim(),
+          topics: [],
+        },
+        imo.trim(),
+      ),
+    );
+  };
+
   const handleSend = () => {
     if (!email.trim() && !phone.trim()) {
       setNote({
@@ -90,17 +136,14 @@ export const SurplusCalculator = () => {
       warn: false,
     });
 
-    const body = buildQuotationSummary(inputs, result, {
-      email: email.trim(),
-      phone: phone.trim(),
-      topics,
-    });
-
-    window.location.href =
-      `mailto:${CONTACT_EMAIL}?subject=` +
-      encodeURIComponent("Request for quotation - FuelEU compliance units") +
-      "&body=" +
-      encodeURIComponent(body);
+    openMail(
+      "Request for quotation - FuelEU compliance units",
+      buildQuotationSummary(inputs, result, {
+        email: email.trim(),
+        phone: phone.trim(),
+        topics,
+      }),
+    );
   };
 
   return (
@@ -126,14 +169,29 @@ export const SurplusCalculator = () => {
         <LedgerPanel result={result} />
         <QuoteRequestCta
           surplus={result.surplus}
-          email={email}
-          phone={phone}
+          contact={{
+            email,
+            phone,
+            onEmailChange: setEmail,
+            onPhoneChange: setPhone,
+          }}
           note={note}
           sectionRef={ctaRef}
           emailRef={emailRef}
-          onEmailChange={setEmail}
-          onPhoneChange={setPhone}
           onSend={handleSend}
+        />
+        <BiofuelOfferCta
+          tons={inputs.tons}
+          imo={imo}
+          onImoChange={setImo}
+          contact={{
+            email: fuelEmail,
+            phone: fuelPhone,
+            onEmailChange: setFuelEmail,
+            onPhoneChange: setFuelPhone,
+          }}
+          note={fuelNote}
+          onSend={handleFuelSend}
         />
         <SensitivityPanel inputs={inputs} />
         <Assumptions result={result} />

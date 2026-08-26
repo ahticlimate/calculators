@@ -51,6 +51,11 @@ export const Field = styled.div<{ $wide?: boolean }>`
   align-items: center;
   gap: ${theme.spacing(2)};
   padding: ${theme.spacing(0)} 0;
+
+  @media (max-width: ${breakpoints.tablet}px) {
+    grid-template-columns: ${(p) => (p.$wide ? "1fr" : "1fr 140px")};
+    padding: ${theme.spacing(1)} 0;
+  }
 `;
 
 export const FieldLabel = styled.label`
@@ -94,6 +99,15 @@ export const InputShell = styled.div`
     ${theme.fontSize(-1)};
     color: ${theme.colors.darkBlue};
     text-align: right;
+
+    /*
+     * iOS Safari zooms the whole page when a focused field is under 16px, and
+     * never zooms back out. Bigger targets suit thumbs on small screens anyway.
+     */
+    @media (max-width: ${breakpoints.tablet}px) {
+      font-size: 16px;
+      padding: ${theme.spacing(2)} ${theme.spacing(2)};
+    }
   }
 
   select {

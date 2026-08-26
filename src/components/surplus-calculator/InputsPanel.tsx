@@ -3,7 +3,6 @@ import { theme } from "../../theme";
 import {
   AskLink,
   Field,
-  FieldHint,
   FieldLabel,
   Fieldset,
   HelpBox,
@@ -15,7 +14,6 @@ import {
   PanelBody,
   PanelTitle,
   SmallButton,
-  Unit,
 } from "./calculator-styles";
 import {
   FOSSIL_FUELS,
@@ -26,6 +24,7 @@ import {
   type RawInputs,
 } from "./model";
 import { formatTwo } from "./format";
+import { NumberField } from "./NumberField";
 import type { QuoteStatus, SourceState } from "./useMarketQuotes";
 
 const QuoteRow = styled.div`
@@ -155,27 +154,24 @@ export const InputsPanel = ({
           {formatTwo(fuelEf)} t/t
         </Meta>
 
-        <Field>
-          <FieldLabel htmlFor="tons">
-            Tonnes replaced
-            <FieldHint>Biofuel bunkered tonne for tonne</FieldHint>
-          </FieldLabel>
-          <InputShell>
-            <input
-              type="number"
-              id="tons"
-              min="0"
-              step="10"
-              value={raw.tons}
-              onChange={(e) => onFieldChange("tons", e.target.value)}
-            />
-            <Unit>t</Unit>
-          </InputShell>
-        </Field>
-
-        <Field>
-          <FieldLabel htmlFor="ciBio">
-            Biofuel GHG intensity
+        <NumberField
+          field="tons"
+          label="Tonnes replaced"
+          unit="t"
+          hint="Biofuel bunkered tonne for tonne"
+          step="10"
+          value={raw.tons}
+          onChange={onFieldChange}
+        />
+        <NumberField
+          field="ciBio"
+          label="Biofuel GHG intensity"
+          unit="g/MJ"
+          hint="Certified well-to-wake value"
+          step="0.5"
+          value={raw.ciBio}
+          onChange={onFieldChange}
+          adornment={
             <HelpToggle
               type="button"
               aria-expanded={openHelp === "ciBio"}
@@ -185,21 +181,8 @@ export const InputsPanel = ({
             >
               ?
             </HelpToggle>
-            <FieldHint>Certified well-to-wake value</FieldHint>
-          </FieldLabel>
-          <InputShell>
-            <input
-              type="number"
-              id="ciBio"
-              min="0"
-              step="0.5"
-              value={raw.ciBio}
-              onChange={(e) => onFieldChange("ciBio", e.target.value)}
-            />
-            <Unit>g/MJ</Unit>
-          </InputShell>
-        </Field>
-
+          }
+        />
         {openHelp === "ciBio" && (
           <HelpBox id="help-ciBio">
             <p>
@@ -219,95 +202,64 @@ export const InputsPanel = ({
 
       <Fieldset>
         <Legend>Prices</Legend>
-        <Field>
-          <FieldLabel htmlFor="priceFossil">Fossil fuel price</FieldLabel>
-          <InputShell>
-            <input
-              type="number"
-              id="priceFossil"
-              min="0"
-              step="5"
-              value={raw.priceFossil}
-              onChange={(e) => onFieldChange("priceFossil", e.target.value)}
-            />
-            <Unit>$/t</Unit>
-          </InputShell>
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="priceBio">
-            Biofuel price
-            <FieldHint>Delivered, per tonne</FieldHint>
-          </FieldLabel>
-          <InputShell>
-            <input
-              type="number"
-              id="priceBio"
-              min="0"
-              step="5"
-              value={raw.priceBio}
-              onChange={(e) => onFieldChange("priceBio", e.target.value)}
-            />
-            <Unit>$/t</Unit>
-          </InputShell>
-        </Field>
+        <NumberField
+          field="priceFossil"
+          label="Fossil fuel price"
+          unit="$/t"
+          step="5"
+          value={raw.priceFossil}
+          onChange={onFieldChange}
+        />
+        <NumberField
+          field="priceBio"
+          label="Biofuel price"
+          unit="$/t"
+          hint="Delivered, per tonne"
+          step="5"
+          value={raw.priceBio}
+          onChange={onFieldChange}
+        />
       </Fieldset>
 
       <Fieldset>
         <Legend>Market data</Legend>
-        <Field>
-          <FieldLabel htmlFor="eua">EUA price</FieldLabel>
-          <InputShell>
-            <input
-              type="number"
-              id="eua"
-              min="0"
-              step="0.05"
-              value={raw.eua}
-              onChange={(e) => onFieldChange("eua", e.target.value)}
-            />
-            <Unit>€/t</Unit>
-          </InputShell>
-          <FieldStatus>
-            <Dot $state={quoteStatus.eua} />
-            {sourceLabel(quoteStatus.eua)}
-          </FieldStatus>
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="poolPriceEur">
-            Pooled unit price
-            <FieldHint>What a pool pays per surplus unit</FieldHint>
-          </FieldLabel>
-          <InputShell>
-            <input
-              type="number"
-              id="poolPriceEur"
-              min="0"
-              step="5"
-              value={raw.poolPriceEur}
-              onChange={(e) => onFieldChange("poolPriceEur", e.target.value)}
-            />
-            <Unit>€/t</Unit>
-          </InputShell>
-        </Field>
-        <Field>
-          <FieldLabel htmlFor="fx">EUR / USD</FieldLabel>
-          <InputShell>
-            <input
-              type="number"
-              id="fx"
-              min="0.1"
-              step="0.0001"
-              value={raw.fx}
-              onChange={(e) => onFieldChange("fx", e.target.value)}
-            />
-            <Unit>rate</Unit>
-          </InputShell>
-          <FieldStatus>
-            <Dot $state={quoteStatus.fx} />
-            {sourceLabel(quoteStatus.fx)}
-          </FieldStatus>
-        </Field>
-
+        <NumberField
+          field="eua"
+          label="EUA price"
+          unit="€/t"
+          step="0.05"
+          value={raw.eua}
+          onChange={onFieldChange}
+          status={
+            <FieldStatus>
+              <Dot $state={quoteStatus.eua} />
+              {sourceLabel(quoteStatus.eua)}
+            </FieldStatus>
+          }
+        />
+        <NumberField
+          field="poolPriceEur"
+          label="Pooled unit price"
+          unit="€/t"
+          hint="What a pool pays per surplus unit"
+          step="5"
+          value={raw.poolPriceEur}
+          onChange={onFieldChange}
+        />
+        <NumberField
+          field="fx"
+          label="EUR / USD"
+          unit="rate"
+          step="0.0001"
+          value={raw.fx}
+          onChange={onFieldChange}
+          status={
+            <FieldStatus>
+              <Dot $state={quoteStatus.fx} />
+              {sourceLabel(quoteStatus.fx)}
+            </FieldStatus>
+          }
+        />
         <QuoteRow>
           <QuoteSource aria-live="polite">{summary(quoteStatus)}</QuoteSource>
           <SmallButton type="button" onClick={onRefresh}>
