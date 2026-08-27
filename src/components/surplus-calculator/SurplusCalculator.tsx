@@ -18,16 +18,18 @@ import {
   type FossilFuelKey,
   type NumericField,
 } from "./model";
-import {
-  buildBiofuelOfferSummary,
-  buildQuotationSummary,
-} from "./quotation";
 import { useMarketQuotes, type MarketQuotes } from "./useMarketQuotes";
 import { loadInputs, saveInputs } from "./storage";
 import { loadConsent, saveConsent, type ConsentState } from "./consent";
-import { submitInputs } from "./submitInputs";
+import {
+  submitBiofuelOffer,
+  submitInputs,
+  submitQuoteRequest,
+  type SubmitState,
+} from "./netlifyForms";
 import { ConsentBanner, ConsentFootnote } from "./ConsentBanner";
 import { PrintReport } from "./PrintReport";
+import { FeedbackWidget } from "./FeedbackWidget";
 
 const EMPTY_NOTE = { text: "", warn: false };
 
@@ -77,11 +79,13 @@ export const SurplusCalculator = () => {
   const [phone, setPhone] = useState("");
   const [topics, setTopics] = useState<string[]>([]);
   const [note, setNote] = useState(EMPTY_NOTE);
+  const [sendState, setSendState] = useState<SubmitState>("idle");
 
   const [fuelEmail, setFuelEmail] = useState("");
   const [fuelPhone, setFuelPhone] = useState("");
   const [imo, setImo] = useState("");
   const [fuelNote, setFuelNote] = useState(EMPTY_NOTE);
+  const [fuelSendState, setFuelSendState] = useState<SubmitState>("idle");
 
   const ctaRef = useRef<HTMLElement>(null);
   const emailRef = useRef<HTMLInputElement>(null);
@@ -165,15 +169,7 @@ export const SurplusCalculator = () => {
     });
   };
 
-  const openMail = (subject: string, body: string) => {
-    window.location.href =
-      `mailto:${CONTACT_EMAIL}?subject=` +
-      encodeURIComponent(subject) +
-      "&body=" +
-      encodeURIComponent(body);
-  };
-
-  const handleFuelSend = () => {
+  const handleFuelSend = async () => {
     if (!fuelEmail.trim() && !fuelPhone.trim()) {
       setFuelNote({
         text: "Add an email or a phone number so we can reach you.",
@@ -182,27 +178,30 @@ export const SurplusCalculator = () => {
       return;
     }
 
-    setFuelNote({
-      text: "Opening your email client. Send the message and we will be in touch.",
-      warn: false,
+    setFuelSendState("sending");
+    setFuelNote({ text: "Sending your request…", warn: false });
+
+    const ok = await submitBiofuelOffer(inputs, result, {
+      email: fuelEmail.trim(),
+      phone: fuelPhone.trim(),
+      imo: imo.trim(),
     });
 
-    openMail(
-      "Request for offer - marine biofuel",
-      buildBiofuelOfferSummary(
-        inputs,
-        result,
-        {
-          email: fuelEmail.trim(),
-          phone: fuelPhone.trim(),
-          topics: [],
-        },
-        imo.trim(),
-      ),
+    setFuelSendState(ok ? "sent" : "error");
+    setFuelNote(
+      ok
+        ? {
+            text: "Request received. We will come back to you within one business day.",
+            warn: false,
+          }
+        : {
+            text: `That did not send. Please try again, or write to ${CONTACT_EMAIL}.`,
+            warn: true,
+          },
     );
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!email.trim() && !phone.trim()) {
       setNote({
         text: "Add an email or a phone number so we can reach you.",
@@ -212,18 +211,26 @@ export const SurplusCalculator = () => {
       return;
     }
 
-    setNote({
-      text: "Opening your email client. Send the message and we will be in touch.",
-      warn: false,
+    setSendState("sending");
+    setNote({ text: "Sending your request…", warn: false });
+
+    const ok = await submitQuoteRequest(inputs, result, {
+      email: email.trim(),
+      phone: phone.trim(),
+      topics,
     });
 
-    openMail(
-      "Request for quotation - FuelEU compliance units",
-      buildQuotationSummary(inputs, result, {
-        email: email.trim(),
-        phone: phone.trim(),
-        topics,
-      }),
+    setSendState(ok ? "sent" : "error");
+    setNote(
+      ok
+        ? {
+            text: "Request received. We will come back to you with a price within one business day.",
+            warn: false,
+          }
+        : {
+            text: `That did not send. Please try again, or write to ${CONTACT_EMAIL}.`,
+            warn: true,
+          },
     );
   };
 
@@ -276,6 +283,7 @@ export const SurplusCalculator = () => {
             onPhoneChange: setPhone,
           }}
           note={note}
+          submitState={sendState}
           sectionRef={ctaRef}
           emailRef={emailRef}
           onSend={handleSend}
@@ -291,6 +299,7 @@ export const SurplusCalculator = () => {
             onPhoneChange: setFuelPhone,
           }}
           note={fuelNote}
+          submitState={fuelSendState}
           onSend={handleFuelSend}
         />
         <SensitivityPanel inputs={inputs} />
@@ -303,6 +312,7 @@ export const SurplusCalculator = () => {
             />
           }
         />
+        <FeedbackWidget />
       </div>
       </Columns>
     </>

@@ -8,9 +8,10 @@
   <body>
     <!--
       Netlify discovers forms by parsing deployed HTML at build time and never
-      sees anything React renders. This page exists only to declare the form and
-      to give the POST a real file to land on, so the single-page-app catch-all
-      rewrite cannot swallow it. Keep the fields in sync with submitInputs.ts.
+      sees anything React renders. This page exists only to declare the forms
+      and to give the POST a real file to land on, so the single-page-app
+      catch-all rewrite cannot swallow it. Every field the client posts must
+      appear here or it will not be kept. Keep in sync with netlifyForms.ts.
     -->
     <form name="calculator-inputs" data-netlify="true" netlify-honeypot="bot-field">
       <input type="hidden" name="form-name" value="calculator-inputs" />
@@ -26,6 +27,55 @@
       <input type="text" name="surplus" />
       <input type="text" name="poolNet" />
       <input type="text" name="offsetNet" />
+    </form>
+
+    <form name="quote-request" data-netlify="true" netlify-honeypot="bot-field">
+      <input type="hidden" name="form-name" value="quote-request" />
+      <input type="text" name="bot-field" />
+      <input type="text" name="email" />
+      <input type="text" name="phone" />
+      <input type="text" name="topics" />
+      <input type="text" name="fossil" />
+      <input type="text" name="tons" />
+      <input type="text" name="ciBio" />
+      <input type="text" name="priceFossil" />
+      <input type="text" name="priceBio" />
+      <input type="text" name="poolPriceEur" />
+      <input type="text" name="eua" />
+      <input type="text" name="fx" />
+      <input type="text" name="surplus" />
+      <input type="text" name="poolNet" />
+      <input type="text" name="offsetNet" />
+      <input type="text" name="ets" />
+      <input type="text" name="premium" />
+      <input type="text" name="poolProfit" />
+      <input type="text" name="penaltyAvoided" />
+    </form>
+
+    <form name="biofuel-offer" data-netlify="true" netlify-honeypot="bot-field">
+      <input type="hidden" name="form-name" value="biofuel-offer" />
+      <input type="text" name="bot-field" />
+      <input type="text" name="email" />
+      <input type="text" name="phone" />
+      <input type="text" name="imo" />
+      <input type="text" name="fossil" />
+      <input type="text" name="tons" />
+      <input type="text" name="ciBio" />
+      <input type="text" name="priceFossil" />
+      <input type="text" name="priceBio" />
+      <input type="text" name="poolPriceEur" />
+      <input type="text" name="eua" />
+      <input type="text" name="fx" />
+      <input type="text" name="surplus" />
+      <input type="text" name="poolNet" />
+      <input type="text" name="offsetNet" />
+    </form>
+
+    <form name="feedback" data-netlify="true" netlify-honeypot="bot-field">
+      <input type="hidden" name="form-name" value="feedback" />
+      <input type="text" name="bot-field" />
+      <input type="text" name="message" />
+      <input type="text" name="email" />
     </form>
   </body>
 </html>
