@@ -63,6 +63,34 @@ const CalculateButton = styled.button<{ $dirty: boolean }>`
   }
 `;
 
+const PrintButton = styled.button`
+  width: 100%;
+  margin-top: ${theme.spacing(2)};
+  border: 1px solid ${theme.colors.grey(4)};
+  border-radius: 4px;
+  background: ${theme.colors.white};
+  color: ${theme.colors.dimBlue};
+  cursor: pointer;
+  ${theme.fontLabelBold};
+  ${theme.fontSize(-1)};
+  padding: ${theme.spacing(1)} ${theme.spacing(3)};
+
+  &:hover:enabled {
+    border-color: ${theme.colors.blue};
+    color: ${theme.colors.blue};
+  }
+
+  &:disabled {
+    color: ${theme.colors.grey(2)};
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid ${theme.colors.blue};
+    outline-offset: 2px;
+  }
+`;
+
 const CalculateNote = styled.p<{ $dirty?: boolean }>`
   margin: ${theme.spacing(1)} 0 0;
   ${theme.fontNormal};
@@ -153,6 +181,7 @@ interface InputsPanelProps {
   recording: boolean;
   consentAnswered: boolean;
   onCalculate: () => void;
+  onPrint: () => void;
   openHelp: HelpTopic | null;
   onFossilChange: (fossil: FossilFuelKey) => void;
   onFieldChange: (field: NumericField, value: string) => void;
@@ -171,6 +200,7 @@ export const InputsPanel = ({
   recording,
   consentAnswered,
   onCalculate,
+  onPrint,
   openHelp,
   onFossilChange,
   onFieldChange,
@@ -339,6 +369,9 @@ export const InputsPanel = ({
                 ? "Results are up to date. Your figures are recorded when you calculate."
                 : "Results are up to date."}
         </CalculateNote>
+        <PrintButton type="button" disabled={dirty} onClick={onPrint}>
+          Print / save as PDF
+        </PrintButton>
       </CalculateRow>
     </PanelBody>
   </Panel>

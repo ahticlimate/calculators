@@ -115,7 +115,7 @@ const Brandmark = styled.img`
 
 const App = () => {
   return (
-    <AppMain>
+    <AppMain data-print="hide">
       <ContainerCard maxWidth={1400}>
         <MainCardContent>
           <MainPanel>
