@@ -8,6 +8,7 @@ interface BiofuelOfferCtaProps {
   onImoChange: (value: string) => void;
   contact: BannerContact;
   note: { text: string; warn: boolean };
+  submitState: "idle" | "sending" | "sent" | "error";
   onSend: () => void;
 }
 
@@ -22,6 +23,7 @@ export const BiofuelOfferCta = ({
   onImoChange,
   contact,
   note,
+  submitState,
   onSend,
 }: BiofuelOfferCtaProps) => (
   <RequestBanner
@@ -41,7 +43,8 @@ export const BiofuelOfferCta = ({
     buttonLabel="Request an offer"
     contact={contact}
     note={note}
-    defaultNote={`Goes to ${CONTACT_EMAIL}. We reply within one business day.`}
+    submitState={submitState}
+    defaultNote={`Sent straight to Ahti along with your figures above. We reply within one business day, or write to ${CONTACT_EMAIL}.`}
     extraField={
       <BannerInputWrap>
         <input

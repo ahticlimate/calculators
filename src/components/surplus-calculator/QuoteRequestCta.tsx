@@ -26,6 +26,7 @@ interface QuoteRequestCtaProps {
   surplus: number;
   contact: BannerContact;
   note: { text: string; warn: boolean };
+  submitState: "idle" | "sending" | "sent" | "error";
   sectionRef: RefObject<HTMLElement | null>;
   emailRef: RefObject<HTMLInputElement | null>;
   onSend: () => void;
@@ -35,6 +36,7 @@ export const QuoteRequestCta = ({
   surplus,
   contact,
   note,
+  submitState,
   sectionRef,
   emailRef,
   onSend,
@@ -50,7 +52,8 @@ export const QuoteRequestCta = ({
       buttonLabel="Get a price"
       contact={contact}
       note={note}
-      defaultNote={`Goes to ${CONTACT_EMAIL}. We reply within one business day.`}
+      submitState={submitState}
+      defaultNote={`Sent straight to Ahti along with your figures above. We reply within one business day, or write to ${CONTACT_EMAIL}.`}
       sectionRef={sectionRef}
       emailRef={emailRef}
       onSend={onSend}

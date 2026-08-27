@@ -77,6 +77,11 @@ const InputWrap = styled.div`
 `;
 
 const SendButton = styled.button<{ $tone: "primary" | "secondary" }>`
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
   flex: 0 0 auto;
   border: 0;
   border-radius: 4px;
@@ -120,6 +125,8 @@ interface RequestBannerProps {
   headline: ReactNode;
   body: string;
   buttonLabel: string;
+  /** Blocks a second submit and reports the outcome in the button label. */
+  submitState?: "idle" | "sending" | "sent" | "error";
   contact: BannerContact;
   note: { text: string; warn: boolean };
   defaultNote: string;
@@ -137,6 +144,7 @@ export const RequestBanner = ({
   headline,
   body,
   buttonLabel,
+  submitState = "idle",
   contact,
   note,
   defaultNote,
@@ -174,8 +182,17 @@ export const RequestBanner = ({
         />
       </InputWrap>
       {extraField}
-      <SendButton type="button" $tone={tone} onClick={onSend}>
-        {buttonLabel}
+      <SendButton
+        type="button"
+        $tone={tone}
+        disabled={submitState === "sending" || submitState === "sent"}
+        onClick={onSend}
+      >
+        {submitState === "sending"
+          ? "Sending…"
+          : submitState === "sent"
+            ? "Sent"
+            : buttonLabel}
       </SendButton>
     </Row>
     <Note $warn={note.warn} aria-live="polite">
