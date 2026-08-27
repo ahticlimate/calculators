@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import styled from "styled-components";
 import { theme } from "../../theme";
 import { ATTENTION, ATTENTION_WASH, Columns } from "./calculator-styles";
@@ -26,6 +27,7 @@ import { loadInputs, saveInputs } from "./storage";
 import { loadConsent, saveConsent, type ConsentState } from "./consent";
 import { submitInputs } from "./submitInputs";
 import { ConsentBanner, ConsentFootnote } from "./ConsentBanner";
+import { PrintReport } from "./PrintReport";
 
 const EMPTY_NOTE = { text: "", warn: false };
 
@@ -109,6 +111,15 @@ export const SurplusCalculator = () => {
       void submitInputs(nextInputs, calculate(nextInputs));
     }
   };
+
+  /*
+   * The report is portalled to <body> because the whole interactive shell is
+   * hidden for print, and anything rendered inside it would be hidden too.
+   */
+  const report = createPortal(
+    <PrintReport inputs={inputs} result={result} />,
+    document.body,
+  );
 
   const handleConsent = (granted: boolean) => {
     const state: ConsentState = granted ? "granted" : "denied";
@@ -218,6 +229,7 @@ export const SurplusCalculator = () => {
 
   return (
     <>
+      {report}
       {consent === "unset" && <ConsentBanner onDecide={handleConsent} />}
       <Columns>
       <InputsPanel
@@ -227,6 +239,7 @@ export const SurplusCalculator = () => {
         fuelEf={result.fuel.ef}
         quoteStatus={quoteStatus}
         dirty={dirty}
+        onPrint={() => window.print()}
         recording={consent === "granted"}
         consentAnswered={consent !== "unset"}
         onCalculate={handleCalculate}

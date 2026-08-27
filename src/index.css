@@ -42,3 +42,30 @@ h4,
 p {
   margin-top: 0;
 }
+
+/*
+ * Print: swap the interactive UI for the A4 report. The screen layout is a form
+ * beside live results, neither of which belongs on paper, so the report is a
+ * separate block that only exists here.
+ */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 14mm 15mm;
+  }
+
+  html,
+  body,
+  #root {
+    background: #ffffff;
+    min-height: 0;
+  }
+
+  [data-print="hide"] {
+    display: none !important;
+  }
+
+  a[href]::after {
+    content: none !important;
+  }
+}

@@ -1,6 +1,7 @@
 const n0 = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 const n1 = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
 const n2 = new Intl.NumberFormat("en-US", { maximumFractionDigits: 2 });
+const n4 = new Intl.NumberFormat("en-US", { maximumFractionDigits: 4 });
 
 /** Thin spaces instead of commas, the way the printed figures read. */
 const spaced = (value: string): string => value.replace(/,/g, " ");
@@ -8,6 +9,9 @@ const spaced = (value: string): string => value.replace(/,/g, " ");
 export const formatInt = (value: number): string => spaced(n0.format(value));
 export const formatOne = (value: number): string => spaced(n1.format(value));
 export const formatTwo = (value: number): string => spaced(n2.format(value));
+
+/** FX needs its full precision on a printed record, or the figures cannot be reproduced. */
+export const formatRate = (value: number): string => spaced(n4.format(value));
 
 /** Plain integer, no thin spaces — for the email summary. */
 export const plainInt = (value: number): string => n0.format(value);
