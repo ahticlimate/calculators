@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import logo from "../../assets/ahti-climate-logo.png";
 import { formatInt, formatOne, formatRate, formatTwo } from "./format";
+import { SensitivityChart, ValueBars } from "./PrintCharts";
 import {
   PENALTY_EUR_PER_TONNE,
   TARGET_INTENSITY,
@@ -27,6 +28,40 @@ const Sheet = styled.div`
     font-size: 9.5pt;
     line-height: 1.35;
   }
+`;
+
+/** Everything that is not part of working out the value moves to page two. */
+const Page = styled.div`
+  break-after: page;
+
+  &:last-child {
+    break-after: auto;
+  }
+`;
+
+const ContinuationHead = styled.header`
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8mm;
+  border-bottom: 0.75pt solid #092960;
+  padding-bottom: 2mm;
+  margin-bottom: 4mm;
+  font-size: 8.5pt;
+  color: #36498d;
+
+  b {
+    font-family: "Plus Jakarta Sans", sans-serif;
+    font-weight: 800;
+    font-size: 11pt;
+    color: #092960;
+  }
+`;
+
+const Lead = styled.p`
+  margin: 0 0 3mm;
+  font-size: 9pt;
+  color: #092960;
 `;
 
 const Masthead = styled.header`
@@ -68,7 +103,7 @@ const Prepared = styled.p`
 `;
 
 const Section = styled.section`
-  margin-bottom: 3.5mm;
+  margin-bottom: 3mm;
   break-inside: avoid;
 `;
 
@@ -192,6 +227,7 @@ export const PrintReport = ({
 
   return (
     <Sheet data-print="report">
+      <Page>
       <Masthead>
         <div>
           <Kicker>FuelEU Maritime 2026 · pooling supply side</Kicker>
@@ -309,18 +345,58 @@ export const PrintReport = ({
       </Section>
 
       <Section>
+        <SectionTitle>Where the value sits</SectionTitle>
+        <ValueBars result={result} />
+      </Section>
+
+      <Section>
+        <SectionTitle>Net result at other biofuel intensities</SectionTitle>
+        <SensitivityChart inputs={inputs} />
+      </Section>
+      </Page>
+
+      <Page>
+        <ContinuationHead>
+          <b>Basis, scope and disclaimer</b>
+          <span>Compliance surplus calculation · {prepared}</span>
+        </ContinuationHead>
+
+        <Lead>
+          The figures on the previous page depend on assumptions that rarely
+          hold in full. This page records them so the calculation can be checked
+          rather than taken on trust.
+        </Lead>
+
+      <Section>
+        <SectionTitle>Your actual benefit depends on your FuelEU exposure</SectionTitle>
+        <Basis>
+          <li>
+            A surplus only arises on energy inside the FuelEU scope: all energy
+            on intra-EEA voyages and at berth in EEA ports, half of the energy
+            on voyages to or from a port outside the EEA, and none beyond that.
+            If part of the fuel is burned outside, both the surplus and the ETS
+            saving fall proportionally.
+          </li>
+          <li>
+            The surplus is netted against your own position first. Whatever
+            covers a deficit inside your own reporting perimeter pays off as
+            penalties avoided rather than as units sold, and only the remainder
+            can be pooled.
+          </li>
+          <li>
+            Final volumes are whatever your verifier confirms and THETIS-MRV
+            records. Nothing can be pooled before that.
+          </li>
+        </Basis>
+      </Section>
+
+      <Section>
         <SectionTitle>Basis and assumptions</SectionTitle>
         <Basis>
           <li>
             Compliance balance follows FuelEU Maritime Annex IV: (target
             intensity − biofuel intensity) × energy delivered in scope. The 2026
             target is {formatTwo(TARGET_INTENSITY)} gCO₂e/MJ.
-          </li>
-          <li>
-            All energy is assumed to fall inside the FuelEU and EU ETS scope. In
-            practice only intra-EEA voyages, half of voyages to or from a
-            non-EEA port, and time at berth in EEA ports count. Anything burned
-            outside reduces both the surplus and the ETS saving proportionally.
           </li>
           <li>
             Biofuel replaces the fossil fuel one tonne for one tonne at 37
@@ -331,9 +407,13 @@ export const PrintReport = ({
             {formatInt(PENALTY_EUR_PER_TONNE)} per tCO₂e or at the pooled unit
             price — never both, since the same tonnes cannot do both.
           </li>
+          <li>No RFNBO multiplier or wind reward factor is applied.</li>
           <li>
-            No RFNBO multiplier or wind reward factor. Volumes must be verified
-            and recorded in THETIS-MRV before they can be pooled.
+            The EUA figure is taken from the SparkChange Physical Carbon EUA
+            ETC, which is backed by held allowances and quoted in euros. It
+            tracks the allowance price closely but is not the ICE front-month
+            settlement. FX is the ECB reference rate. Both were current when
+            this sheet was prepared and can be overridden in the calculator.
           </li>
         </Basis>
       </Section>
@@ -342,6 +422,7 @@ export const PrintReport = ({
         Indicative figures only and not an offer. Unit prices are quoted case by
         case. Prepared with the Ahti Climate surplus calculator — © Ahti Climate
       </Footer>
+      </Page>
     </Sheet>
   );
 };
